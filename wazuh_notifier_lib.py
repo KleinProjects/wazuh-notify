@@ -19,7 +19,7 @@ def set_env():
 
     wazuh_path = os.path.abspath(os.path.join(__file__, "../../.."))
     ar_path = '{0}/logs/active-responses.log'.format(wazuh_path)
-    config_path = 'wazuh-notifier-config.yaml'.format(wazuh_path)
+    config_path = '{0}/etc/wazuh-notifier-config.yaml'.format(wazuh_path)
 
     return wazuh_path, ar_path, config_path
 

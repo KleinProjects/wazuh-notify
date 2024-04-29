@@ -1,22 +1,33 @@
-#!/usr/bin/python3
-# Copyright (C) 2015-2022, Wazuh Inc.
-# All rights reserved.
+#!/usr/bin/env python3
 
-# This program is free software; you can redistribute it
-# and/or modify it under the terms of the GNU General Public
-# License (version 2) as published by the FSF - Free Software
-# Foundation.
+
+# This script is adapted version of the Python active response script sample, provided by Wazuh, in the documentation:
+# https://documentation.wazuh.com/current/user-manual/capabilities/active-response/custom-active-response-scripts.html)
+# It is provided under the below copyright statement:
+#
+#           Copyright (C) 2015-2022, Wazuh Inc.
+#           All rights reserved.
+#
+#           This program is free software; you can redistribute it
+#           and/or modify it under the terms of the GNU General Public
+#           License (version 2) as published by the FSF - Free Software
+#           Foundation.
+#
+# This version has changes in
+# 1) the first lines of code with the assignments, and
+# 2) the Start Custom Action Add section
+# This version is free software. Rudi Klein, april 2024
 
 import os
 import sys
 import json
 import datetime
 from pathlib import PureWindowsPath, PurePosixPath
+from wazuh_notifier_lib import set_env as se
+from wazuh_notifier_lib import set_time as st
+from wazuh_notifier_lib import import_config as ic
 
-if os.name == 'nt':
-    LOG_FILE = "C:\\Program Files (x86)\\ossec-agent\\active-response\\active-responses.log"
-else:
-    LOG_FILE = "/var/ossec/logs/active-responses.log"
+wazuh_path, ar_path, config_path = se()
 
 ADD_COMMAND = 0
 DELETE_COMMAND = 1
@@ -33,7 +44,7 @@ class message:
 
 
 def write_debug_file(ar_name, msg):
-    with open(LOG_FILE, mode="a") as log_file:
+    with open(ar_path, mode="a") as log_file:
         ar_name_posix = str(PurePosixPath(PureWindowsPath(ar_name[ar_name.find("active-response"):])))
         log_file.write(str(datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')) + " " + ar_name_posix + ": " + msg +"\n")
 
@@ -144,8 +155,24 @@ def main(argv):
 
         """ Start Custom Action Add """
 
-        with open("ar-test-result.txt", mode="a") as test_file:
-            test_file.write("Active response triggered by rule ID: <" + str(keys) + ">\n")
+        if 1 == 1:
+
+            discord_notifier = '{0}/active-response/bin/wazuh-discord-notifier.py'.format(wazuh_path)
+            discord_exec = "python3 " + discord_notifier + " "
+            write_debug_file(argv[0], "Start Discord notifier")
+            discord_params = "--message " + '"' + str(keys) + '"'
+            discord_command = discord_exec + discord_params
+            os.system(discord_command)
+
+
+        if str(ic("discord_enabled")) == "1":
+
+            ntfy_notifier = '{0}/active-response/bin/wazuh-ntfy-notifier.py'.format(wazuh_path)
+            ntfy_exec = "python3 " + ntfy_notifier + " "
+            write_debug_file(argv[0], "Start NTFY notifier")
+            ntfy_params = "-d __KleinTest --message " + '"' + str(keys) + '"'
+            ntfier_command = ntfy_exec + ntfy_params
+            os.system(ntfier_command)
 
         """ End Custom Action Add """
 

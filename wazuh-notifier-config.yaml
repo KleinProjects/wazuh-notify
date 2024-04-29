@@ -28,7 +28,7 @@ ntfy_enabled: 1
 
 ntfy_server: "https://ntfy.sh/"
 ntfy_sender: "Wazuh (IDS)"
-ntfy_destination: "none"
+ntfy_destination: "__KleinTest"
 ntfy_priority: "5"
 ntfy_message: "Test message"
 ntfy_tags: "information, testing, yaml"
