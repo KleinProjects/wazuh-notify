@@ -1,7 +1,7 @@
 import os
 import time
+
 import yaml
-from dotenv import load_dotenv
 
 
 # Set structured timestamp.
