@@ -4,7 +4,7 @@ import time
 import yaml
 
 
-# Set structured timestamp.
+# Set structured timestamp for logging and discord/ntfy message.
 
 
 def set_time():
@@ -12,8 +12,10 @@ def set_time():
     now_logging = time.strftime('%Y/%m/%d %H:%M:%S')
     return now_message, now_logging
 
-# Define paths
 
+# Define paths: wazuh_path = wazuh root directory
+#               ar_path = active-responses.log path,
+#               config_path = wazuh-notifier-config.yaml
 
 def set_env():
 
@@ -22,6 +24,9 @@ def set_env():
     config_path = '{0}/etc/wazuh-notifier-config.yaml'.format(wazuh_path)
 
     return wazuh_path, ar_path, config_path
+
+
+# Import configuration settings from wazuh-notifier-config.yaml
 
 
 def import_config(key):
@@ -36,7 +41,8 @@ def import_config(key):
         return None
 
 
-# Showing yaml config
+# Show configuration settings from wazuh-notifier-config.yaml
+
 
 def view_config():
 

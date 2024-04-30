@@ -16,17 +16,17 @@
 # with their friends and communities. It allows for receiving message using webhooks.
 # For more information: https://discord.com.
 
-import requests
 import getopt
-import sys
 import os
-from dotenv import load_dotenv
-from os import getenv
+import sys
 from os.path import join, dirname
 
+import requests
+from dotenv import load_dotenv
+
+from wazuh_notifier_lib import import_config as ic
 from wazuh_notifier_lib import set_env as se
 from wazuh_notifier_lib import set_time as st
-from wazuh_notifier_lib import import_config as ic
 from wazuh_notifier_lib import view_config as vc
 
 # Get path values
@@ -54,7 +54,7 @@ except Exception as err:
 def discord_command(n_server, n_sender, n_destination, n_priority, n_message, n_tags, n_click):
 
     x_message = (now_message +
-                 "\n\n" + "**__" + n_message + "__**\n\n" +
+                 "\n\n" + n_message + "\n\n" +
                  "Priority: " + n_priority + "\n" +
                  "Tags: " + n_tags + "\n\n" + n_click
                  )

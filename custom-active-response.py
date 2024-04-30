@@ -2,7 +2,7 @@
 
 
 # This script is adapted version of the Python active response script sample, provided by Wazuh, in the documentation:
-# https://documentation.wazuh.com/current/user-manual/capabilities/active-response/custom-active-response-scripts.html)
+# https://documentation.wazuh.com/current/user-manual/capabilities/active-response/custom-active-response-scripts.html
 # It is provided under the below copyright statement:
 #
 #           Copyright (C) 2015-2022, Wazuh Inc.
@@ -16,16 +16,16 @@
 # This version has changes in
 # 1) the first lines of code with the assignments, and
 # 2) the Start Custom Action Add section
-# This version is free software. Rudi Klein, april 2024
+# This adapted version is free software. Rudi Klein, april 2024
 
+import datetime
+import json
 import os
 import sys
-import json
-import datetime
 from pathlib import PureWindowsPath, PurePosixPath
-from wazuh_notifier_lib import set_env as se
-from wazuh_notifier_lib import set_time as st
+
 from wazuh_notifier_lib import import_config as ic
+from wazuh_notifier_lib import set_env as se
 
 wazuh_path, ar_path, config_path = se()
 
@@ -37,7 +37,9 @@ ABORT_COMMAND = 3
 OS_SUCCESS = 0
 OS_INVALID = -1
 
-class message:
+
+class Message:
+
     def __init__(self):
         self.alert = ""
         self.command = 0
@@ -46,11 +48,11 @@ class message:
 def write_debug_file(ar_name, msg):
     with open(ar_path, mode="a") as log_file:
         ar_name_posix = str(PurePosixPath(PureWindowsPath(ar_name[ar_name.find("active-response"):])))
-        log_file.write(str(datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')) + " " + ar_name_posix + ": " + msg +"\n")
+        log_file.write(
+            str(datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')) + " " + ar_name_posix + ": " + msg + "\n")
 
 
 def setup_and_check_message(argv):
-
     # get alert from stdin
     input_str = ""
     for line in sys.stdin:
@@ -63,28 +65,29 @@ def setup_and_check_message(argv):
         data = json.loads(input_str)
     except ValueError:
         write_debug_file(argv[0], 'Decoding JSON has failed, invalid input format')
-        message.command = OS_INVALID
-        return message
+        Message.command = OS_INVALID
+        return Message
 
-    message.alert = data
+    Message.alert = data
 
     command = data.get("command")
 
     if command == "add":
-        message.command = ADD_COMMAND
+        Message.command = ADD_COMMAND
     elif command == "delete":
-        message.command = DELETE_COMMAND
+        Message.command = DELETE_COMMAND
     else:
-        message.command = OS_INVALID
+        Message.command = OS_INVALID
         write_debug_file(argv[0], 'Not valid command: ' + command)
 
-    return message
+    return Message
 
 
 def send_keys_and_check_message(argv, keys):
-
     # build and send message with keys
-    keys_msg = json.dumps({"version": 1,"origin":{"name": argv[0],"module":"active-response"},"command":"check_keys","parameters":{"keys":keys}})
+    keys_msg = json.dumps(
+        {"version": 1, "origin": {"name": argv[0], "module": "active-response"}, "command": "check_keys",
+         "parameters": {"keys": keys}})
 
     write_debug_file(argv[0], keys_msg)
 
@@ -105,7 +108,7 @@ def send_keys_and_check_message(argv, keys):
         data = json.loads(input_str)
     except ValueError:
         write_debug_file(argv[0], 'Decoding JSON has failed, invalid input format')
-        return message
+        return Message
 
     action = data.get("command")
 
@@ -120,8 +123,34 @@ def send_keys_and_check_message(argv, keys):
     return ret
 
 
-def main(argv):
+def parameters_deconstruct(event_keys):
+    a_id: str = str(event_keys["agent"]["id"])
+    a_name: str = str(event_keys["agent"]["name"])
+    e_level: str = str(event_keys["rule"]["level"])
+    e_description: str = str(event_keys["rule"]["description"])
+    e_id: str = str(event_keys["rule"]["id"])
+    e_fired_times: str = str(event_keys["rule"]["firedtimes"])
 
+    return a_id, a_name, e_id, e_description, e_level, e_fired_times
+
+
+def construct_message(caller: str, a_id: str, a_name: str, e_id: str, e_description: str, e_level: str,
+                      e_fired_times: str):
+    discord_accent = ""
+    if caller == "discord":
+        discord_accent = "**"
+
+    message_params: str = ("--message " + '"' +
+                           discord_accent + "Agent: " + discord_accent + a_name + " (" + a_id + ")" + "\n" +
+                           discord_accent + "Event id: " + discord_accent + e_id + "\n" +
+                           discord_accent + "Description: " + discord_accent + e_description + "\n" +
+                           discord_accent + "Threat level: " + discord_accent + e_level + "\n" +
+                           discord_accent + "Times fired: " + discord_accent + e_fired_times + "\n" + '"')
+
+    return message_params
+
+
+def main(argv):
     write_debug_file(argv[0], "Started")
 
     # validate json and get command
@@ -137,9 +166,10 @@ def main(argv):
         """
 
         alert = msg.alert["parameters"]["alert"]
-        keys = [alert["rule"]["id"]]
+        keys = [alert["rule"]]
 
-        """ End Custom Key """
+        agent_id, agent_name, event_level, event_description, event_id, event_fired_times = parameters_deconstruct(
+            alert)
 
         action = send_keys_and_check_message(argv, keys)
 
@@ -155,22 +185,23 @@ def main(argv):
 
         """ Start Custom Action Add """
 
-        if 1 == 1:
-
+        if str(ic("discord_enabled")) == "1":
+            caller = "discord"
             discord_notifier = '{0}/active-response/bin/wazuh-discord-notifier.py'.format(wazuh_path)
             discord_exec = "python3 " + discord_notifier + " "
             write_debug_file(argv[0], "Start Discord notifier")
-            discord_params = "--message " + '"' + str(keys) + '"'
+            discord_params = construct_message(caller, agent_id, agent_name, event_level, event_description, event_id,
+                                               event_fired_times)
             discord_command = discord_exec + discord_params
             os.system(discord_command)
 
-
-        if str(ic("discord_enabled")) == "1":
-
+        if str(ic("ntfy_enabled")) == "1":
+            caller = "ntfy"
             ntfy_notifier = '{0}/active-response/bin/wazuh-ntfy-notifier.py'.format(wazuh_path)
             ntfy_exec = "python3 " + ntfy_notifier + " "
             write_debug_file(argv[0], "Start NTFY notifier")
-            ntfy_params = "-d __KleinTest --message " + '"' + str(keys) + '"'
+            ntfy_params = construct_message(caller, agent_id, agent_name, event_level, event_description, event_id,
+                                            event_fired_times)
             ntfier_command = ntfy_exec + ntfy_params
             os.system(ntfier_command)
 
@@ -180,7 +211,7 @@ def main(argv):
 
         """ Start Custom Action Delete """
 
-        os.remove("ar-test-result.txt")
+        pass
 
         """ End Custom Action Delete """
 
