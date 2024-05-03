@@ -36,12 +36,13 @@ wazuh_path, ar_path, config_path = se()
 now_message, now_logging = st()
 
 # Retrieve webhook from .env
+
+# Catching some errors
 try:
     dotenv_path = join(dirname(__file__), '.env')
     load_dotenv(dotenv_path)
     if not os.path.isfile(dotenv_path): raise Exception(dotenv_path, "file not found")
     discord_webhook = os.getenv("DISCORD_WEBHOOK")
-
 
 except Exception as err:
     # output error, and return with an error code
@@ -52,13 +53,12 @@ except Exception as err:
 
 
 def discord_command(n_server, n_sender, n_destination, n_priority, n_message, n_tags, n_click):
-
     x_message = (now_message +
                  "\n\n" + n_message + "\n\n" +
                  "Priority: " + n_priority + "\n" +
                  "Tags: " + n_tags + "\n\n" + n_click
                  )
-    n_data = {"username": n_sender,"embeds": [{"description": x_message, "title": n_destination}]}
+    n_data = {"username": n_sender, "embeds": [{"description": x_message, "title": n_destination}]}
 
     result = requests.post(n_server, json=n_data)
 
@@ -141,4 +141,3 @@ except getopt.error as err:
 
 # Finally, execute the POST request
 discord_command(discord_webhook, sender, destination, priority, message, tags, click)
-

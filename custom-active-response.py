@@ -131,23 +131,33 @@ def parameters_deconstruct(event_keys):
     e_id: str = str(event_keys["rule"]["id"])
     e_fired_times: str = str(event_keys["rule"]["firedtimes"])
 
-    return a_id, a_name, e_id, e_description, e_level, e_fired_times
+    e_full_event: str = str(json.dumps(event_keys, indent=0).replace('"', '')
+                            .replace('{', '')
+                            .replace('}', '')
+                            .replace('[', '')
+                            .replace(']', '')
+                            .replace(',', '')
+                            .replace(' ', '')
+                            )
+
+    return a_id, a_name, e_id, e_description, e_level, e_fired_times, e_full_event
 
 
-def construct_message(caller: str, a_id: str, a_name: str, e_id: str, e_description: str, e_level: str,
-                      e_fired_times: str):
-    discord_accent = ""
-    if caller == "discord":
-        discord_accent = "**"
+def construct_basic_message(accent: str, a_id: str, a_name: str, e_id: str, e_description: str, e_level: str,
+                            e_fired_times: str):
+    # Adding the BOLD text string to the Discord message. Ntfy has a different message format.
 
-    message_params: str = ("--message " + '"' +
-                           discord_accent + "Agent: " + discord_accent + a_name + " (" + a_id + ")" + "\n" +
-                           discord_accent + "Event id: " + discord_accent + e_id + "\n" +
-                           discord_accent + "Description: " + discord_accent + e_description + "\n" +
-                           discord_accent + "Threat level: " + discord_accent + e_level + "\n" +
-                           discord_accent + "Times fired: " + discord_accent + e_fired_times + "\n" + '"')
+    basic_message: str = ("--message " + '"' +
+                          accent + "Agent: " + accent + a_name + " (" + a_id + ")" + "\n" +
+                          accent + "Event id: " + accent + e_id + "\n" +
+                          accent + "Description: " + accent + e_description + "\n" +
+                          accent + "Threat level: " + accent + e_level + "\n" +
+                          # Watch this last addition to the string. It should include the closing quote for the
+                          # basic_message string. It must be closed by -> '"'. This will be done outside this function
+                          # in order to enable another specific addition (event_full_message) in the calling procedure.
+                          accent + "Times fired: " + accent + e_fired_times + "\n")
 
-    return message_params
+    return basic_message
 
 
 def main(argv):
@@ -168,8 +178,8 @@ def main(argv):
         alert = msg.alert["parameters"]["alert"]
         keys = [alert["rule"]]
 
-        agent_id, agent_name, event_level, event_description, event_id, event_fired_times = parameters_deconstruct(
-            alert)
+        agent_id, agent_name, event_level, event_description, event_id, event_fired_times, event_full_message = \
+            parameters_deconstruct(alert)
 
         action = send_keys_and_check_message(argv, keys)
 
@@ -186,23 +196,36 @@ def main(argv):
         """ Start Custom Action Add """
 
         if str(ic("discord_enabled")) == "1":
-            caller = "discord"
+
+            accent = "**"
             discord_notifier = '{0}/active-response/bin/wazuh-discord-notifier.py'.format(wazuh_path)
             discord_exec = "python3 " + discord_notifier + " "
             write_debug_file(argv[0], "Start Discord notifier")
-            discord_params = construct_message(caller, agent_id, agent_name, event_level, event_description, event_id,
-                                               event_fired_times)
-            discord_command = discord_exec + discord_params
+            discord_message = construct_basic_message(accent, agent_id, agent_name, event_level, event_description,
+                                                      event_id, event_fired_times)
+
+            if ic("discord_full_message") == "1":
+                discord_message = discord_message + "\n" + accent + "__Full event__" + accent + event_full_message + '"'
+            else:
+                discord_message = discord_message + '"'
+            discord_command = discord_exec + discord_message
             os.system(discord_command)
 
         if str(ic("ntfy_enabled")) == "1":
-            caller = "ntfy"
+            accent = ""
             ntfy_notifier = '{0}/active-response/bin/wazuh-ntfy-notifier.py'.format(wazuh_path)
             ntfy_exec = "python3 " + ntfy_notifier + " "
             write_debug_file(argv[0], "Start NTFY notifier")
-            ntfy_params = construct_message(caller, agent_id, agent_name, event_level, event_description, event_id,
-                                            event_fired_times)
-            ntfier_command = ntfy_exec + ntfy_params
+            ntfy_message = construct_basic_message(accent, agent_id, agent_name, event_level, event_description,
+                                                   event_id, event_fired_times)
+
+            # If the full message flag is set, the full message PLUS the closing parenthesis will be added
+            if ic("ntfy_full_message") == "1":
+                ntfy_message = ntfy_message + "\n" + "Full event" + event_full_message + '"'
+            else:
+                ntfy_message = ntfy_message + '"'
+
+            ntfier_command = ntfy_exec + ntfy_message
             os.system(ntfier_command)
 
         """ End Custom Action Add """

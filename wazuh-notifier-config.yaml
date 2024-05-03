@@ -4,13 +4,13 @@
 # This is the yaml config file for both the wazuh-ntfy-notifier.py and wazuh-discord-notifier.py.
 # The yaml needs to be in the same folder as the wazuh-ntfy-notifier.py and wazuh-discord-notifier.py
 
-# COMMON configuration settings start here.
+# COMMON (custom-wazuh-notifiers.py) configuration settings start here.
 # 1 =  messages will be sent through this message server. 0 = messages will NOT be sent through this message server.
 
 discord_enabled: 1
 ntfy_enabled: 1
 
-# COMMON configuration settings start here.
+# COMMON configuration settings end here.
 
 
 # NTFY configuration settings start here.
@@ -34,7 +34,10 @@ ntfy_message: "Test message"
 ntfy_tags: "information, testing, yaml"
 ntfy_click: "https://google.com"
 
-# NTFY configuration settings ends here.
+# 1 to send the full event data with the message. 0 only sends the message with basic details
+ntfy_full_message: "1"
+
+# NTFY configuration settings end here.
 
 # DISCORD configuration settings start here.
 # The default values refer to the hard-coded defaults, if no yaml configuration is found.
@@ -56,6 +59,9 @@ discord_priority: "5"
 discord_message: "Test message"
 discord_tags: "informational, testing, yaml"
 discord_click: "https://google.com"
+
+# 1 to send the full event data with the message. 0 only sends the message with basic details
+discord_full_message: "0"
 
 # DISCORD configuration settings ends here.
 
