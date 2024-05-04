@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
+
+<instance-profile id="notifier"
+                 name="notifier"
+                 start-page="Wazuh-notifier.md">
+
+    <toc-element topic="Wazuh-notifier.md"/>
+    <toc-element topic="Tutorial.md"/>
+</instance-profile>
