@@ -10,20 +10,21 @@
 #           License (version 2) as published by the FSF - Free Software
 #           Foundation.
 #
-# This script is executed by the active response script (custom-active-response.py), which is triggered by rules firing.
+# This script is executed by the active response script (wazuh-active-response.py), which is triggered by rules firing.
 #
 # ntfy (pronounced notify) is a simple HTTP-based pub-sub notification service.
 # It allows you to send notifications to your phone or desktop via scripts from any computer, and/or using a REST API.
 # It's infinitely flexible, and 100% free software. For more information: https://ntfy.sh.
 
-import json
-import requests
 import getopt
+import json
 import sys
 
+import requests
+
+from wazuh_notifier_lib import import_config as ic
 from wazuh_notifier_lib import set_env as se
 from wazuh_notifier_lib import set_time as st
-from wazuh_notifier_lib import import_config as ic
 from wazuh_notifier_lib import view_config as vc
 
 # Get path values

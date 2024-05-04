@@ -10,6 +10,11 @@
 discord_enabled: 1
 ntfy_enabled: 1
 
+# Exclude rules that are listed in the ossec.conf active response definition.
+
+excluded_rules: "5401, 5402, 5403"
+excluded_agents: "999"
+
 # COMMON configuration settings end here.
 
 
@@ -35,7 +40,7 @@ ntfy_tags: "information, testing, yaml"
 ntfy_click: "https://google.com"
 
 # 1 to send the full event data with the message. 0 only sends the message with basic details
-ntfy_full_message: "1"
+ntfy_full_message: "0"
 
 # NTFY configuration settings end here.
 

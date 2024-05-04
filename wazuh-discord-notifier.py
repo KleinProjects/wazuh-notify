@@ -10,7 +10,7 @@
 #           License (version 2) as published by the FSF - Free Software
 #           Foundation.
 #
-# This script is executed by the active response script (custom-active-response.py), which is triggered by rules firing.
+# This script is executed by the active response script (wazuh-active-response.py), which is triggered by rules firing.
 #
 # Discord is a voice, video and text communication service used by over a hundred million people to hang out and talk
 # with their friends and communities. It allows for receiving message using webhooks.
@@ -37,11 +37,13 @@ now_message, now_logging = st()
 
 # Retrieve webhook from .env
 
-# Catching some errors
+# Catching some path errors.
 try:
     dotenv_path = join(dirname(__file__), '.env')
     load_dotenv(dotenv_path)
-    if not os.path.isfile(dotenv_path): raise Exception(dotenv_path, "file not found")
+    if not os.path.isfile(dotenv_path):
+        raise Exception(dotenv_path, "file not found")
+
     discord_webhook = os.getenv("DISCORD_WEBHOOK")
 
 except Exception as err:
@@ -91,14 +93,20 @@ click = d_click if (ic("discord_click") is None) else ic("discord_click")
 
 help_text: str = """
  -u, --server        is the webhook URL of the Discord server. It is stored in .env.
- -s, --sender        is the sender of the message, either an app name or a person. The default is "Security message".
- -d, --destination   is the destination (actually the originator) of the message, either an app name or a person. Default is "Wazuh (IDS)"
- -p, --priority      is the priority of the message, ranging from 1 (highest), to 5 (lowest). Default is 5.
- -m, --message       is the text of the message to be sent. Default is "Test message", but may include --tags and/or --click.
- -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). Default is "informational, testing, hard-coded".
- -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. Default is https://google.com.
- -h, --help          shows this help message. Must have no value argument.
- -v, --view          show config.
+ -s, --sender        is the sender of the message, either an app name or a person. 
+                     The default is "Security message".
+ -d, --destination   is the destination (actually the originator) of the message, either an app name or a person. 
+                     Default is "Wazuh (IDS)"
+ -p, --priority      is the priority of the message, ranging from 1 (highest), to 5 (lowest). 
+                     Default is 5.
+ -m, --message       is the text of the message to be sent. 
+                     Default is "Test message", but may include --tags and/or --click.
+ -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). 
+                     Default is "informational, testing, hard-coded".
+ -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. 
+                     Default is https://google.com.
+ -h, --help          Shows this help message.
+ -v, --view          Show yaml configuration.
 """
 
 #   Get params during execution. Params found here, override minimal defaults and/or config settings.

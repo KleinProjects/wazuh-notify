@@ -27,6 +27,8 @@ from pathlib import PureWindowsPath, PurePosixPath
 from wazuh_notifier_lib import import_config as ic
 from wazuh_notifier_lib import set_env as se
 
+# Some variable assignments
+
 wazuh_path, ar_path, config_path = se()
 
 ADD_COMMAND = 0
@@ -123,14 +125,13 @@ def send_keys_and_check_message(argv, keys):
     return ret
 
 
-def parameters_deconstruct(event_keys):
+def parameters_deconstruct(argv, event_keys):
     a_id: str = str(event_keys["agent"]["id"])
     a_name: str = str(event_keys["agent"]["name"])
-    e_level: str = str(event_keys["rule"]["level"])
-    e_description: str = str(event_keys["rule"]["description"])
     e_id: str = str(event_keys["rule"]["id"])
+    e_description: str = str(event_keys["rule"]["description"])
+    e_level: str = str(event_keys["rule"]["level"])
     e_fired_times: str = str(event_keys["rule"]["firedtimes"])
-
     e_full_event: str = str(json.dumps(event_keys, indent=0).replace('"', '')
                             .replace('{', '')
                             .replace('}', '')
@@ -140,10 +141,16 @@ def parameters_deconstruct(event_keys):
                             .replace(' ', '')
                             )
 
-    return a_id, a_name, e_id, e_description, e_level, e_fired_times, e_full_event
+    if e_id in ic("excluded_rules") or a_id in ic("excluded_agents"):
+
+        write_debug_file(argv[0], "Excluded rule or agent: " + e_id + "/" + a_id)
+
+    else:
+
+        return a_id, a_name, e_id, e_description, e_level, e_fired_times, e_full_event
 
 
-def construct_basic_message(accent: str, a_id: str, a_name: str, e_id: str, e_description: str, e_level: str,
+def construct_basic_message(argv, accent: str, a_id: str, a_name: str, e_id: str, e_description: str, e_level: str,
                             e_fired_times: str):
     # Adding the BOLD text string to the Discord message. Ntfy has a different message format.
 
@@ -178,8 +185,8 @@ def main(argv):
         alert = msg.alert["parameters"]["alert"]
         keys = [alert["rule"]]
 
-        agent_id, agent_name, event_level, event_description, event_id, event_fired_times, event_full_message = \
-            parameters_deconstruct(alert)
+        agent_id, agent_name, event_id, event_description, event_level, event_fired_times, event_full_message = \
+            parameters_deconstruct(argv, alert)
 
         action = send_keys_and_check_message(argv, keys)
 
@@ -201,8 +208,9 @@ def main(argv):
             discord_notifier = '{0}/active-response/bin/wazuh-discord-notifier.py'.format(wazuh_path)
             discord_exec = "python3 " + discord_notifier + " "
             write_debug_file(argv[0], "Start Discord notifier")
-            discord_message = construct_basic_message(accent, agent_id, agent_name, event_level, event_description,
-                                                      event_id, event_fired_times)
+            discord_message = construct_basic_message(argv, accent, agent_id, agent_name, event_id, event_description,
+                                                      event_level, event_fired_times)
+
 
             if ic("discord_full_message") == "1":
                 discord_message = discord_message + "\n" + accent + "__Full event__" + accent + event_full_message + '"'
@@ -216,7 +224,7 @@ def main(argv):
             ntfy_notifier = '{0}/active-response/bin/wazuh-ntfy-notifier.py'.format(wazuh_path)
             ntfy_exec = "python3 " + ntfy_notifier + " "
             write_debug_file(argv[0], "Start NTFY notifier")
-            ntfy_message = construct_basic_message(accent, agent_id, agent_name, event_level, event_description,
+            ntfy_message = construct_basic_message(argv, accent, agent_id, agent_name, event_level, event_description,
                                                    event_id, event_fired_times)
 
             # If the full message flag is set, the full message PLUS the closing parenthesis will be added
