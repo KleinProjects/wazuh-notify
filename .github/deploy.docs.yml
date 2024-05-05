@@ -1,0 +1,41 @@
+name: build and deploy docs
+
+on:
+  push:
+    branches: [ "master" ]
+    paths: ['Writerside/**']
+  pull_request:
+    branches: [ "master" ]
+    paths: ['Writerside/**']
+
+jobs:
+
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Docker login
+        run: docker login docker.dariusklein.nl -u Darius -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build the Docker image
+        run: docker build . --file Writerside/Dockerfile --tag docker.dariusklein.nl/wazuh-notifier-docs
+      - name: Docker push
+        run: docker push docker.dariusklein.nl/wazuh-notifier-docs
+
+
+  publish:
+
+    needs: build
+
+    runs-on: self-hosted
+
+    steps:
+      - name: Docker stop
+        run: docker stop WazuhNotifier  || true
+      - name: Docker login
+        run: docker login docker.dariusklein.nl -u Darius -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Docker pull
+        run: docker pull docker.dariusklein.nl/wazuh-notifier-docs
+      - name: Docker run
+        run: docker run --rm -dit -p 9091:80 --name WazuhNotifier docker.dariusklein.nl/wazuh-notifier-docs

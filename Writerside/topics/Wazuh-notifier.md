@@ -24,7 +24,7 @@ Download the files from https://github.com/RudiKlein/wazuh-notifier to your serv
 Copy the 4 Python files to the /var/ossec/active-response/bin/ folder
 
 ``` 
-$ cp <folder contaning downloaded Wazuh notifier files>/wazuh-*.py /var/ossec/active-response/bin/
+$ cp <downloaded notifier files>/wazuh-*.py /var/ossec/active-response/bin/
 ```
 
 Set the correct ownership
@@ -44,7 +44,7 @@ $ chmod uog+rx /var/ossec/active-response/bin/wazuh-*.py
 Copy the YAML file to /var/ossec/etc/
 
 ```
-$ cp <folder contaning downloaded Wazuh notifier files>/wazuh-notifier-config.yaml /var/ossec/etc/
+$ cp <downloaded notifier files>/wazuh-notifier-config.yaml /var/ossec/etc/
 ```
 
 Set the correct ownership
@@ -61,7 +61,7 @@ $ chmod uog+r /var/ossec/etc/wazuh-notifier-config.yaml
 
 ### Step 4 ###
 
-Modify the ossec.conf configuration file and add the following<br/>
+Modify the /var/ossec/etc/ossec.conf configuration file and add the following<br/>
 
 ```
   <command>
@@ -80,7 +80,7 @@ Modify the ossec.conf configuration file and add the following<br/>
   </active-response>
 ```
 
-Add the rules you want to be informed about between the <rules_id></rules_id>, with the rules id's seperated by comma's.
+Add the rules you want to be informed about between the <rules_id></rules_id>, with the rules id's separated by comma's.
 Example: <rules_id>5402, 3461, 8777</rules_id><br/>
 (Please refer to the Wazuh online documentation for more information [^Wazuh docs])
 
@@ -124,3 +124,21 @@ ntfy_message: "Test message"
 ntfy_tags: "information, testing, yaml"
 ntfy_click: "https://google.com"
 ```
+
+Default settings for the ntfy notifier. This overrules the hardcoded defaults.
+
+```
+discord_server: "not used. The webhook (server) is a secret stored in .env"
+discord_sender: "Security message"
+discord_destination: "WAZUH (IDS)"
+discord_priority: "5"
+discord_message: "Test message"
+discord_tags: "informational, testing, yaml"
+discord_click: "https://google.com"
+
+# 1 to send the full event data with the message. 0 only sends the message with basic details
+discord_full_message: "0"
+```
+
+
+![wazuh discord basic message](wazuh-discord-basic-message.png)
