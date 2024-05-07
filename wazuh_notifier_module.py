@@ -204,16 +204,19 @@ def call_for_help(notifier):
 def get_arguments(notifier, options, long_options):
     # Get params during execution. Params found here, override minimal defaults and/or config settings.
 
+    notifier: str = notifier.lower()
+
     help_text = call_for_help(notifier)
 
     sender, destination, message, priority, tags, click = "", "", "", "", "", ""
-    notifier: str = notifier.lower()
 
-    if notifier == "discord":
+    argument_list: list = sys.argv[1:]
 
+    if not argument_list:
         pass
+
     else:
-        argument_list: list = sys.argv[1:]
+
         try:
             # Parsing argument
             arguments, values = getopt.getopt(argument_list, options, long_options)
@@ -251,4 +254,4 @@ def get_arguments(notifier, options, long_options):
             # output error, and return with an error code
             print(str(err))
 
-            return sender, destination, priority, tags, click
+        return sender, destination, message, priority, tags, click

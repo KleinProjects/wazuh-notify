@@ -75,11 +75,14 @@ yc_args = [notifier, d_server, d_sender, d_destination, d_priority, d_message, d
 
 #   Get params during execution. Params found here, override minimal defaults and/or config settings.
 
-if ga(notifier, options, long_options) is None:
-    pass
-    # sender, destination, priority, message, tags, click = "", "", "", "", "", ""
-else:
-    sender, destination, priority, message, tags, click = ga(notifier, options, long_options)
+# noinspection PyRedeclaration
+a_sender, a_destination, a_message, a_priority, a_tags, a_click = ga(notifier, options, long_options)
+
+if a_sender != '': sender = a_sender
+if a_destination != '': destination = a_destination
+if a_priority != "": priority = a_priority
+if a_tags != "": tags = a_tags
+if a_click != "": click = a_click
 
 # Get the threat level from the message and map it to priority
 
