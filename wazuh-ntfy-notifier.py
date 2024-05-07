@@ -16,16 +16,17 @@
 # It allows you to send notifications to your phone or desktop via scripts from any computer, and/or using a REST API.
 # It's infinitely flexible, and 100% free software. For more information: https://ntfy.sh.
 
-import getopt
 import json
 import sys
 
 import requests
 
-from wazuh_notifier_lib import import_config as ic
-from wazuh_notifier_lib import set_env as se
-from wazuh_notifier_lib import set_time as st
-from wazuh_notifier_lib import view_config as vc
+from wazuh_notifier_module import get_arguments as ga
+from wazuh_notifier_module import get_yaml_config as yc
+from wazuh_notifier_module import set_basic_defaults as bd
+from wazuh_notifier_module import set_environment as se
+from wazuh_notifier_module import set_time as st
+from wazuh_notifier_module import threat_priority_mapping as tpm
 
 # Get path values
 wazuh_path, ar_path, config_path = se()
@@ -48,6 +49,7 @@ def ntfy_command(n_server, n_sender, n_destination, n_priority, n_message, n_tag
 # todo POST the request **** NEEDS future TRY ****
     requests.post(n_server + n_destination, data=x_message, headers=n_header)
 
+
 # Remove 1st argument from the list of command line arguments
 argument_list = sys.argv[1:]
 
@@ -57,76 +59,38 @@ options: str = "u:s:d:p:m:t:c:hv"
 # Long options
 long_options: list = ["server=", "sender=", "destination=", "priority=", "message=", "tags=", "click", "help", "view"]
 
-# Setting some minimal defaults in case the yaml config isn't available
-d_server: str = "https://ntfy.sh/"
-d_sender: str = "Security message"
-d_destination: str = "phil_alerts"
-d_priority: str = "5"
-d_message: str = "Test message"
-d_tags: str = "informational, testing, hard-coded"
-d_click: str = "https://google.com"
+# Defining who I am
+notifier = "ntfy"
 
-# Use the values from the config yaml if available. Overrides the minimal defaults.
-server = d_server if (ic("ntfy_server") is None) else ic("ntfy_server")
-sender = d_sender if (ic("ntfy_sender") is None) else ic("ntfy_sender")
-destination = d_destination if (ic("ntfy_destination") is None) else ic("ntfy_destination")
-priority = d_priority if (ic("ntfy_priority") is None) else ic("ntfy_priority")
-message = d_message if (ic("ntfy_message") is None) else ic("ntfy_message")
-tags = d_tags if (ic("ntfy_tags") is None) else ic("ntfy_tags")
-click = d_click if (ic("ntfy_click") is None) else ic("ntfy_click")
+# Retrieve the hard-coded basic defaults.
+(d_server, d_sender, d_destination, d_priority, d_message, d_tags, d_click, d_notifier_priority_1,
+ d_notifier_priority_2, d_notifier_priority_3, d_notifier_priority_4, d_notifier_priority_5) = bd(notifier)
 
-help_text: str = """
- -u, --server        is the URL of the NTFY server, ending with a "/". Default is https://ntfy.sh/.
- -s, --sender        is the sender of the message, either an app name or a person. Default is "Wazuh (IDS)".
- -d, --destination   is the NTFY subscription, to send the message to. Default is none.
- -p, --priority      is the priority of the message, ranging from 1 (highest), to 5 (lowest). Default is 5.
- -m, --message       is the text of the message to be sent. Default is "Test message".
- -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). Default is "informational, testing, hard-coded".
- -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. Default is https://google.com.
- -h, --help          shows this help message. Must have no value argument.
- -v, --view          show config.
-"""
+# Use the values from the config yaml if available. Overrides the basic defaults.
+yc_args = [notifier, d_server, d_sender, d_destination, d_priority, d_message, d_tags, d_click, d_notifier_priority_1,
+           d_notifier_priority_2, d_notifier_priority_3, d_notifier_priority_4, d_notifier_priority_5]
+
+(server, sender, destination, priority, message, tags, click, notifier_priority_1, notifier_priority_2,
+ notifier_priority_3, notifier_priority_4, notifier_priority_5) = yc(*yc_args)
 
 #   Get params during execution. Params found here, override minimal defaults and/or config settings.
-try:
-    # Parsing argument
-    arguments, values = getopt.getopt(argument_list, options, long_options)
 
-    # Checking each argument
-    for current_argument, current_value in arguments:
+if ga(notifier, options, long_options) is None:
+    pass
+    # sender, destination, priority, message, tags, click = "", "", "", "", "", ""
+else:
+    sender, destination, priority, message, tags, click = ga(notifier, options, long_options)
 
-        if current_argument in ("-h", "--help"):
-            print(help_text)
-            exit()
+# Get the threat level from the message and map it to priority
 
-        elif current_argument in ("-v", "--view"):
-            vc()
-            exit()
+threat_level = message[message.find('Threat level:') + 13:message.find('Threat level:') + 15].replace(" ", "")
 
-        elif current_argument in ("-u", "--server"):
-            server = current_value
+# Get the mapping between threat level (event) and priority (Discord/ntfy)
 
-        elif current_argument in ("-s", "--sender"):
-            sender = current_value
+# noinspection PyRedeclaration
+priority = tpm(threat_level, notifier_priority_1, notifier_priority_2, notifier_priority_3,
+               notifier_priority_4, notifier_priority_5)
 
-        elif current_argument in ("-d", "--destination"):
-            destination = current_value
-
-        elif current_argument in ("-p", "--priority"):
-            priority = current_value
-
-        elif current_argument in ("-m", "--message"):
-            message = current_value
-
-        elif current_argument in ("-t", "--tags"):
-            tags = current_value
-
-        elif current_argument in ("-c", "--click"):
-            click = current_value
-
-except getopt.error as err:
-    # output error, and return with an error code
-    print(str(err))
 
 # Finally, execute the POST request
 ntfy_command(server, sender, destination, priority, message, tags, click)

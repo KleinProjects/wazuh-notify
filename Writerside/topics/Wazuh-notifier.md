@@ -140,6 +140,3 @@ discord_click: "https://google.com"
 discord_full_message: "0"
 ```
 
-test
-
-![wazuh discord basic message](wazuh-discord-basic-message.png)

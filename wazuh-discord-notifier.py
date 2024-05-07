@@ -16,21 +16,22 @@
 # with their friends and communities. It allows for receiving message using webhooks.
 # For more information: https://discord.com.
 
-import getopt
 import os
-import sys
 from os.path import join, dirname
 
 import requests
 from dotenv import load_dotenv
 
-from wazuh_notifier_lib import import_config as ic
-from wazuh_notifier_lib import set_env as se
-from wazuh_notifier_lib import set_time as st
-from wazuh_notifier_lib import view_config as vc
+from wazuh_notifier_module import get_arguments as ga
+from wazuh_notifier_module import get_yaml_config as yc
+from wazuh_notifier_module import set_basic_defaults as bd
+from wazuh_notifier_module import set_environment as se
+from wazuh_notifier_module import set_time as st
+from wazuh_notifier_module import threat_priority_mapping as tpm
 
 # Get path values
 wazuh_path, ar_path, config_path = se()
+
 
 # Get time value
 now_message, now_logging = st()
@@ -62,11 +63,11 @@ def discord_command(n_server, n_sender, n_destination, n_priority, n_message, n_
                  )
     n_data = {"username": n_sender, "embeds": [{"description": x_message, "title": n_destination}]}
 
-    result = requests.post(n_server, json=n_data)
+    requests.post(n_server, json=n_data)
 
 
 # Remove 1st argument from the list of command line arguments
-argument_list: list = sys.argv[1:]
+# argument_list: list = sys.argv[1:]
 
 # Short options
 options: str = "u:s:p:m:t:c:hv"
@@ -74,78 +75,39 @@ options: str = "u:s:p:m:t:c:hv"
 # Long options
 long_options: list = ["server=", "sender=", "destination=", "priority=", "message=", "tags=", "click=", "help", "view"]
 
-# Setting some basic defaults.
-d_sender: str = "Security message"
-d_destination: str = "WAZUH (IDS)"
-d_priority: str = "5"
-d_message: str = "Test message"
-d_tags: str = "informational, testing, hard-code"
-d_click: str = "https://google.com"
+# Defining who I am
+notifier = "discord"
 
-# Use the values from the config yaml if available. Overrides the basic defaults.
-server = discord_webhook
-sender = d_sender if (ic("discord_sender") is None) else ic("discord_sender")
-destination = d_destination if (ic("discord_destination") is None) else ic("discord_destination")
-priority = d_priority if (ic("discord_priority") is None) else ic("discord_priority")
-message = d_message if (ic("discord_message") is None) else ic("discord_message")
-tags = d_tags if (ic("discord_tags") is None) else ic("discord_tags")
-click = d_click if (ic("discord_click") is None) else ic("discord_click")
+# Retrieve the hard-coded basic defaults.
 
-help_text: str = """
- -u, --server        is the webhook URL of the Discord server. It is stored in .env.
- -s, --sender        is the sender of the message, either an app name or a person. 
-                     The default is "Security message".
- -d, --destination   is the destination (actually the originator) of the message, either an app name or a person. 
-                     Default is "Wazuh (IDS)"
- -p, --priority      is the priority of the message, ranging from 1 (highest), to 5 (lowest). 
-                     Default is 5.
- -m, --message       is the text of the message to be sent. 
-                     Default is "Test message", but may include --tags and/or --click.
- -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). 
-                     Default is "informational, testing, hard-coded".
- -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. 
-                     Default is https://google.com.
- -h, --help          Shows this help message.
- -v, --view          Show yaml configuration.
-"""
+(d_server, d_sender, d_destination, d_priority, d_message, d_tags, d_click, d_notifier_priority_1,
+ d_notifier_priority_2, d_notifier_priority_3, d_notifier_priority_4, d_notifier_priority_5) = bd(notifier)
+
+# Use the values from the config yaml if available. Overrides the basic defaults (get_yaml_config).
+
+yc_args = [notifier, d_server, d_sender, d_destination, d_priority, d_message, d_tags, d_click, d_notifier_priority_1,
+           d_notifier_priority_2, d_notifier_priority_3, d_notifier_priority_4, d_notifier_priority_5]
+
+(server, sender, destination, priority, message, tags, click, notifier_priority_1, notifier_priority_2,
+ notifier_priority_3, notifier_priority_4, notifier_priority_5) = yc(*yc_args)
 
 #   Get params during execution. Params found here, override minimal defaults and/or config settings.
-try:
-    # Parsing argument
-    arguments, values = getopt.getopt(argument_list, options, long_options)
 
-    # checking each argument
-    for current_argument, current_value in arguments:
+if ga(notifier, options, long_options) is None:
+    pass
+    # sender, destination, priority, message, tags, click = "", "", "", "", "", ""
+else:
+    sender, destination, priority, message, tags, click = ga(notifier, options, long_options)
 
-        if current_argument in ("-h", "--help"):
-            print(help_text)
-            exit()
+# Get the threat level from the message and map it to priority
 
-        elif current_argument in ("-v", "--view"):
-            vc()
-            exit()
+threat_level = message[message.find('Threat level:') + 13:message.find('Threat level:') + 15].replace(" ", "")
 
-        elif current_argument in ("-s", "--sender"):
-            sender = current_value
+# Get the mapping between threat level (event) and priority (Discord/ntfy)
 
-        elif current_argument in ("-d", "--destination"):
-            destination = current_value
-
-        elif current_argument in ("-p", "--priority"):
-            priority = current_value
-
-        elif current_argument in ("-m", "--message"):
-            message = current_value
-
-        elif current_argument in ("-t", "--tags"):
-            tags = current_value
-
-        elif current_argument in ("-c", "--click"):
-            click = current_value
-
-except getopt.error as err:
-    # output error, and return with an error code
-    print(str(err))
+# noinspection PyRedeclaration
+priority = tpm(threat_level, notifier_priority_1, notifier_priority_2, notifier_priority_3,
+               notifier_priority_4, notifier_priority_5)
 
 # Finally, execute the POST request
 discord_command(discord_webhook, sender, destination, priority, message, tags, click)

@@ -24,8 +24,8 @@ import os
 import sys
 from pathlib import PureWindowsPath, PurePosixPath
 
-from wazuh_notifier_lib import import_config as ic
-from wazuh_notifier_lib import set_env as se
+from wazuh_notifier_module import import_config as ic
+from wazuh_notifier_module import set_environment as se
 
 # Some variable assignments
 
@@ -210,7 +210,6 @@ def main(argv):
             write_debug_file(argv[0], "Start Discord notifier")
             discord_message = construct_basic_message(argv, accent, agent_id, agent_name, event_id, event_description,
                                                       event_level, event_fired_times)
-
 
             if ic("discord_full_message") == "1":
                 discord_message = discord_message + "\n" + accent + "__Full event__" + accent + event_full_message + '"'
