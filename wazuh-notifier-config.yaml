@@ -7,8 +7,7 @@
 # COMMON (custom-wazuh-notifiers.py) configuration settings start here.
 # 1 =  messages will be sent through this message server. 0 = messages will NOT be sent through this message server.
 
-discord_enabled: 1
-ntfy_enabled: 1
+targets: "discord,ntfy"
 
 # Exclude rules that are listed in the ossec.conf active response definition.
 
@@ -23,63 +22,10 @@ notifier_priority_3: 7, 6
 notifier_priority_4: 5, 4
 notifier_priority_5: 3 ,2, 1
 
-# COMMON configuration settings end here.
+sender: "Wazuh (IDS)"
+click: "https://google.com"
 
-
-# NTFY configuration settings start here.
-# The default values refer to the hard-coded defaults, if no yaml configuration is found.
-#
-# -u, --server        is the URL of the NTFY server, ending with a "/". Default is https://ntfy.sh/.
-# -s, --sender        is the sender of the message, either an app name or a person. Default is "Wazuh (IDS)".
-# -d, --destination   is the NTFY subscription, to send the message to. Default is none.
-# -p, --priority      is the priority of the message, ranging from 1 (highest), to 5 (lowest). Default is 5.
-# -m, --message       is the text of the message to be sent. Default is "Test message".
-# -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). Default is "informational, testing, hard-coded".
-# -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. Default is https://google.com.
-# -h, --help          shows this help message. Must have no value argument.
-# -v, --view          show config.
-
-ntfy_server: "https://ntfy.sh/"
-ntfy_sender: "Wazuh (IDS)"
-ntfy_destination: "__KleinTest"
-ntfy_priority: "3"
-ntfy_message: "Test message"
-ntfy_tags: "information, testing, yaml"
-ntfy_click: "https://google.com"
-
-# 1 to send the full event data with the message. 0 only sends the message with basic details
-ntfy_full_message: "0"
-
-# NTFY configuration settings end here.
-
-# DISCORD configuration settings start here.
-# The default values refer to the hard-coded defaults, if no yaml configuration is found.
-
-# -u, --server        is the webhook URL of the Discord server. It is stored in .env.
-# -s, --sender        is the sender of the message, either an app name or a person. The default is "Security message".
-# -d, --destination   is the destination (actually the originator) of the message, either an app name or a person. Default is "Wazuh (IDS)"
-# -p, --priority      is the priority of the message, ranging from 1 (highest), to 5 (lowest). Default is 5.
-# -m, --message       is the text of the message to be sent. Default is "Test message", but may include --tags and/or --click.
-# -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). Default is "informational, testing, hard-coded".
-# -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. Default is https://google.com.
-# -h, --help          shows this help message. Must have no value argument.
-# -v, --view          show config.
-
-discord_server: "not used! The webhook (server) is a secret stored in .env"
-discord_sender: "Security message"
-discord_destination: "WAZUH (IDS)"
-discord_priority: "3"
-discord_message: "Test message"
-discord_tags: "informational, testing, yaml"
-discord_click: "https://google.com"
-
-# 1 to send the full event data with the message. 0 only sends the message with basic details
-discord_full_message: "0"
-
-# DISCORD configuration settings ends here.
 
 #end of yaml
 ...
-
-
 
