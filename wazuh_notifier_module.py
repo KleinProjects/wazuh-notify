@@ -2,9 +2,29 @@ import getopt
 import os
 import sys
 import time
+from os.path import join, dirname
 
 import yaml
+from dotenv import load_dotenv
 
+
+def get_env():
+    try:
+        dotenv_path = join(dirname(__file__), '.env')
+        load_dotenv(dotenv_path)
+        if not os.path.isfile(dotenv_path):
+            raise Exception(dotenv_path, "file not found")
+
+        # Retrieve url from .env
+        discord_url = os.getenv("DISCORD_url")
+        ntfy_url = os.getenv("NTFY_url")
+
+    except Exception as err:
+        # output error, and return with an error code
+        print(str(Exception(err.args)))
+        exit(err)
+
+    return discord_url, ntfy_url
 
 # Set structured timestamp for logging and discord/ntfy message.
 
@@ -25,7 +45,7 @@ def set_environment():
     wazuh_path = "/var/ossec"
     # wazuh_path = os.path.abspath(os.path.join(__file__, "../../.."))
     ar_path = '{0}/logs/active-responses.log'.format(wazuh_path)
-    config_path = '{0}/etc/wazuh-notifier-config.yaml'.format(wazuh_path)
+    config_path = 'wazuh-notifier-config.yaml'.format(wazuh_path)
 
     return wazuh_path, ar_path, config_path
 
@@ -33,14 +53,13 @@ def set_environment():
 # Import configuration settings from wazuh-notifier-config.yaml
 
 
-def import_config(key):
+def import_config():
     try:
         _, _, config_path = set_environment()
 
         with open(config_path, 'r') as ntfier_config:
             config: dict = yaml.safe_load(ntfier_config)
-            value: str = config.get(key)
-            return value
+            return config
     except (FileNotFoundError, PermissionError, OSError):
         return None
 
@@ -90,125 +109,47 @@ def threat_priority_mapping(threat_level, np_1, np_2, np_3, np_4, np_5):
     return priority_mapping
 
 
-def set_basic_defaults(notifier):
-    # Setting some minimal defaults in case the yaml config isn't available
-    notifier: str = notifier.lower()
+def get_yaml_config():
+    config = import_config()
 
-    sender: str = "Security message"
-    destination: str = "Test"
-    priority: str = "1"
-    message: str = "Test message"
-    tags: str = "informational, testing, hard-coded"
-    click: str = "https://google.com"
+    config['np_1'] = "3, 3, 3" if (config.get("notifier_priority_1") is None) else config.get("notifier_priority_1")
+    config['np_2'] = "4, 5" if (config.get("notifier_priority_2") is None) else config.get("notifier_priority_2")
+    config['np_3'] = "6, 7" if (config.get("notifier_priority_3") is None) else config.get("notifier_priority_3")
+    config['np_4'] = "8, 9" if (config.get("notifier_priority_4") is None) else config.get("notifier_priority_4")
+    config['np_5'] = "10, 11, 12" if (config.get("notifier_priority_5") is None) else config.get("notifier_priority_5")
+    config['targets'] = "ntfy, discord" if (config.get("targets") is None) else config.get("targets")
+    config['excluded_rules'] = "" if (config.get("excluded_rules") is None) else config.get("excluded_rules")
+    config['excluded_agents'] = "" if (config.get("excluded_agents") is None) else config.get("excluded_agents")
+    config['sender'] = "Wazuh (IDS)" if (config.get("sender") is None) else config.get("sender")
+    config['click'] = "https://wazuh.org" if (config.get("click") is None) else config.get("click")
 
-    if notifier == "ntfy":
-        # NTFY defaults.
-        server: str = "https://ntfy.sh/"
-
-    elif notifier == "discord":
-
-        # Discord defaults.
-        server: str = ""
-
-    else:
-        server: str = "Unknown notifier specified. Must be ntfy or discord."
-
-    # Mapping event threat level to 5 value priority level.
-
-    np_5 = "12, 11, 10"
-    np_4 = "9, 8"
-    np_3 = "7, 6"
-    np_2 = "5, 4"
-    np_1 = "3, 2, 1"
-
-    return (server, sender, destination, priority, message, tags, click,
-            np_1, np_2, np_3, np_4, np_5)
+    return config
 
 
-def get_yaml_config(notifier: str, y_server: str, y_sender: str, y_destination: str, y_priority: str, y_message: str,
-                    y_tags: str, y_click: str, y_np_1: str, y_np_2: str, y_np_3: str, y_np_4: str, y_np_5: str):
-    notifier: str = notifier.lower()
-    server = y_server if (import_config(notifier + "_server") is None) else import_config(notifier + "_server")
-    sender = y_sender if (import_config(notifier + "_sender") is None) else import_config(notifier + "_sender")
-    destination = y_destination if (import_config(notifier + "_destination") is None) else \
-        import_config(notifier + "_destination")
-    priority = y_priority if (import_config(notifier + "_priority") is None) else import_config(notifier + "_priority")
-    message = y_message if (import_config(notifier + "_message") is None) else import_config(notifier + "_message")
-    tags = y_tags if (import_config(notifier + "_tags") is None) else import_config(notifier + "_tags")
-    click = y_click if (import_config(notifier + "_click") is None) else import_config(notifier + "_click")
-
-    np_1 = y_np_1 if (import_config("np1") is None) else import_config("np1")
-    np_2 = y_np_2 if (import_config("np2") is None) else import_config("np2")
-    np_3 = y_np_3 if (import_config("np3") is None) else import_config("np3")
-    np_4 = y_np_4 if (import_config("np4") is None) else import_config("np4")
-    np_5 = y_np_5 if (import_config("np5") is None) else import_config("np5")
-
-    return (server, sender, destination, priority, message, tags, click,
-            np_1, np_2, np_3, np_4, np_5)
-
-
-def call_for_help(notifier):
-    notifier: str = notifier.lower()
-
-    if notifier == "ntfy":
-        # NTFY help.
-
-        help_text: str = """
-         -u, --server        is the URL of the NTFY server, ending with a "/". 
-                             Default is https://ntfy.sh/.
-         -s, --sender        is the sender of the message, either an app name or a person. 
-                             Default is "Wazuh (IDS)".
-         -d, --destination   is the NTFY subscription, to send the message to. 
-                             Default is none.
-         -p, --priority      is the priority of the message, ranging from 1 (lowest), to 5 (highest). 
-                             Default is 5.
-         -m, --message       is the text of the message to be sent.
-                             Default is "Test message".
-         -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). 
-                             Default is "informational, testing, hard-coded".
-         -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. 
-                             Default is https://google.com.
-         -h, --help          shows this help message. Must have no value argument.
-         -v, --view          show config.
-        """
-
-    elif notifier == "discord":
-
-        # Discord help.
-
-        help_text: str = """
-             -u, --server        is the webhook URL of the Discord server. It is stored in .env.
-             -s, --sender        is the sender of the message, either an app name or a person. 
-                                 The default is "Security message".
-             -d, --destination   is the destination (actually the originator) of the message, either an app name or a person. 
-                                 Default is "Wazuh (IDS)"
-             -p, --priority      is the priority of the message, ranging from 1 (highest), to 5 (lowest). 
-                                 Default is 5.
-             -m, --message       is the text of the message to be sent. 
-                                 Default is "Test message", but may include --tags and/or --click.
-             -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). 
-                                 Default is "informational, testing, hard-coded".
-             -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. 
-                                 Default is https://google.com.
-             -h, --help          Shows this help message.
-             -v, --view          Show yaml configuration.
-            """
-    else:
-        help_text: str = """
-        No help available. Assuming the wrong notifier asked for help.
-        """
-
-    return help_text
-
-
-def get_arguments(notifier, options, long_options):
+def get_arguments():
     # Get params during execution. Params found here, override minimal defaults and/or config settings.
 
-    notifier: str = notifier.lower()
+    # Short options
+    options: str = "u:s:p:m:t:c:hv"
 
-    help_text = call_for_help(notifier)
+    # Long options
+    long_options: list = ["url=", "sender=", "destination=", "priority=", "message=", "tags=", "click=", "help",
+                          "view"]
 
-    sender, destination, message, priority, tags, click = "", "", "", "", "", ""
+    help_text: str = """
+         -u, --url           is the url for the server, ending with a "/". 
+         -s, --sender        is the sender of the message, either an app name or a person. 
+         -d, --destination   is the NTFY subscription or Discord title, to send the message to. 
+         -p, --priority      is the priority of the message, ranging from 1 (lowest), to 5 (highest). 
+         -m, --message       is the text of the message to be sent.
+         -t, --tags          is an arbitrary strings of tags (keywords), seperated by a "," (comma). 
+         -c, --click         is a link (URL) that can be followed by tapping/clicking inside the message. 
+         -h, --help          shows this help message. Must have no value argument.
+         -v, --view          show config.
+
+    """
+
+    url, sender, destination, message, priority, tags, click = "", "", "", "", "", "", ""
 
     argument_list: list = sys.argv[1:]
 
@@ -232,6 +173,9 @@ def get_arguments(notifier, options, long_options):
                     view_config()
                     exit()
 
+                elif current_argument in ("-u", "--url"):
+                    url = current_value
+
                 elif current_argument in ("-s", "--sender"):
                     sender = current_value
 
@@ -254,4 +198,4 @@ def get_arguments(notifier, options, long_options):
             # output error, and return with an error code
             print(str(err))
 
-        return sender, destination, message, priority, tags, click
+        return url, sender, destination, message, priority, tags, click
