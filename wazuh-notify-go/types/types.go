@@ -1,14 +1,14 @@
 package types
 
 type Params struct {
-	Server      string `yaml:"discord_server"`
-	Sender      string `yaml:"discord_sender"`
-	Destination string `yaml:"discord_destination"`
-	Priority    int    `yaml:"discord_priority"`
-	Message     string `yaml:"discord_message"`
-	Tags        string `yaml:"discord_tags"`
-	Click       string `yaml:"discord_click"`
-	Targets     string `yaml:"targets"`
+	Server      string
+	Sender      string `yaml:"sender,omitempty"`
+	Destination string
+	Priority    int
+	Message     string
+	Tags        string
+	Click       string `yaml:"click,omitempty"`
+	Targets     string `yaml:"targets,omitempty"`
 }
 
 type Message struct {
