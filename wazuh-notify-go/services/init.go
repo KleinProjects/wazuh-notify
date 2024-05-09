@@ -16,7 +16,6 @@ import (
 var inputParams types.Params
 var configParams types.Params
 var wazuhData types.WazuhMessage
-var BasePath string
 
 func InitNotify() types.Params {
 	BaseFilePath, _ := os.Executable()
@@ -40,6 +39,8 @@ func InitNotify() types.Params {
 	yaml.Unmarshal(yamlFile, &configParams)
 
 	log.Log("yaml loaded")
+	configParamString, _ := json.Marshal(configParams)
+	log.Log(string(configParamString))
 
 	flag.StringVar(&inputParams.Url, "url", "", "is the webhook URL of the Discord server. It is stored in .env.")
 	flag.StringVar(&inputParams.Click, "click", configParams.Click, "is a link (URL) that can be followed by tapping/clicking inside the message. Default is https://google.com.")
@@ -51,6 +52,9 @@ func InitNotify() types.Params {
 	flag.Parse()
 
 	log.Log("params loaded")
+	inputParamString, _ := json.Marshal(inputParams)
+	log.Log(string(inputParamString))
+
 	inputParams.Targets = configParams.Targets
 
 	wazuhInput()
@@ -68,4 +72,8 @@ func wazuhInput() {
 	inputParams.Tags += strings.Join(wazuhData.Parameters.Alert.Rule.Groups, ",")
 
 	inputParams.WazuhMessage = wazuhData
+
+	log.Log("Wazuh data loaded")
+	inputParamString, _ := json.Marshal(inputParams)
+	log.Log(string(inputParamString))
 }
