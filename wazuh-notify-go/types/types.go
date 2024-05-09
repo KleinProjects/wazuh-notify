@@ -1,14 +1,18 @@
 package types
 
 type Params struct {
-	Server      string
-	Sender      string `yaml:"sender,omitempty"`
-	Destination string
-	Priority    int
-	Message     string
-	Tags        string
-	Click       string `yaml:"click,omitempty"`
-	Targets     string `yaml:"targets,omitempty"`
+	Url          string
+	Sender       string `yaml:"sender,omitempty"`
+	Priority     int
+	Tags         string
+	Click        string `yaml:"click,omitempty"`
+	Targets      string `yaml:"targets,omitempty"`
+	WazuhMessage WazuhMessage
+	Priority1    []int `yaml:"priority_1"`
+	Priority2    []int `yaml:"priority_2"`
+	Priority3    []int `yaml:"priority_3"`
+	Priority4    []int `yaml:"priority_4"`
+	Priority5    []int `yaml:"priority_5"`
 }
 
 type Message struct {
