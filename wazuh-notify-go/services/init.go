@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -22,7 +21,7 @@ var BasePath string
 func InitNotify() types.Params {
 	BaseFilePath, _ := os.Executable()
 	BaseDirPath := path.Dir(BaseFilePath)
-    
+
 	log.OpenLogFile(BaseDirPath)
 
 	err := godotenv.Load(path.Join(BaseDirPath, "../../etc/.env"))
