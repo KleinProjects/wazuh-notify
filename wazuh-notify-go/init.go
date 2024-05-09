@@ -31,4 +31,5 @@ func initNotify() {
 	flag.StringVar(&inputParams.Targets, "targets", "", "is a list of targets to send notifications to. Default is \"discord\".")
 
 	flag.Parse()
+	inputParams.Targets = configParams.Targets
 }
