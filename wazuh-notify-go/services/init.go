@@ -7,6 +7,8 @@ import (
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v2"
 	"os"
+	"path"
+	"runtime"
 	"wazuh-notify/log"
 	"wazuh-notify/types"
 )
@@ -14,18 +16,30 @@ import (
 var inputParams types.Params
 var configParams types.Params
 var wazuhData types.WazuhMessage
+var BasePath string
 
 func InitNotify() types.Params {
-	err := godotenv.Load()
+	_, currentFile, _, _ := runtime.Caller(1)
+
+	BasePath = path.Dir(currentFile)
+
+	log.OpenLogFile(BasePath)
+
+	err := godotenv.Load(path.Join(BasePath, "../../etc/.env"))
 	if err != nil {
 		log.Log("env failed to load")
+		godotenv.Load(path.Join(BasePath, "/.env"))
 	} else {
 		log.Log("env loaded")
 	}
 
 	wazuhInput()
 
-	yamlFile, err := os.ReadFile("./config.yaml")
+	yamlFile, err := os.ReadFile(path.Join(BasePath, "../../etc/config.yaml"))
+	if err != nil {
+		log.Log("yaml failed to load")
+		yamlFile, err = os.ReadFile(path.Join(BasePath, "config.yaml"))
+	}
 	yaml.Unmarshal(yamlFile, &configParams)
 
 	log.Log("yaml loaded")
@@ -39,7 +53,7 @@ func InitNotify() types.Params {
 
 	flag.Parse()
 
-	log.Log("yaml loaded")
+	log.Log("params loaded")
 	inputParams.Targets = configParams.Targets
 
 	return inputParams

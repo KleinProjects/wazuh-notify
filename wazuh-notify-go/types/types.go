@@ -25,5 +25,5 @@ type Message struct {
 type Embed struct {
 	Title       string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
-	Color       string `json:"color,omitempty"`
+	Color       int    `json:"color,omitempty"`
 }

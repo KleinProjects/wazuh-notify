@@ -2,13 +2,18 @@ package log
 
 import (
 	"os"
+	"path"
 	"time"
 )
 
-var f, _ = os.OpenFile("active-responses.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+var logFile *os.File
+
+func OpenLogFile(BasePath string) {
+	logFile, _ = os.OpenFile(path.Join(BasePath, "../../log/active-responses.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+}
 
 func Log(message string) {
-	if _, err := f.WriteString("\n" + time.Now().Format(time.DateTime) + message); err != nil {
+	if _, err := logFile.WriteString("\n" + message + ": " + time.Now().String()); err != nil {
 		panic(err)
 	}
 }

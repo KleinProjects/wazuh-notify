@@ -22,12 +22,28 @@ func SendDiscord(params types.Params) {
 		"Tags: " + params.Tags + "\n\n" +
 		params.Click
 
+	var color int
+
+	switch params.Priority {
+	case 1:
+		color = 0x339900
+	case 2:
+		color = 0x99cc33
+	case 3:
+		color = 0xffcc00
+	case 4:
+		color = 0xff9966
+	case 5:
+		color = 0xcc3300
+	}
+
 	message := types.Message{
 		Username: params.Sender,
 		Embeds: []types.Embed{
 			{
 				Title:       params.Sender,
 				Description: embedDescription,
+				Color:       color,
 			},
 		},
 	}
