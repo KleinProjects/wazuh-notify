@@ -20,9 +20,7 @@ var wazuhData types.WazuhMessage
 var BasePath string
 
 func InitNotify() types.Params {
-	_, currentFile, _, _ := runtime.Caller(1)
-
-	BasePath = path.Dir(currentFile)
+	BasePath, _ := os.Executable()
 
 	log.OpenLogFile(BasePath)
 
