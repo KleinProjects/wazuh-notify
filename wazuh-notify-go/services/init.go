@@ -8,7 +8,6 @@ import (
 	"gopkg.in/yaml.v2"
 	"os"
 	"path"
-	"runtime"
 	"strings"
 	"wazuh-notify/log"
 	"wazuh-notify/types"

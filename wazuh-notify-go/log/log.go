@@ -2,6 +2,7 @@ package log
 
 import (
 	"os"
+	"path"
 	"time"
 )
 
