@@ -20,6 +20,18 @@ func OpenLogFile(BasePath string) {
 	}
 }
 
+func CloseLogFile() {
+	_, err := logFile.WriteString(
+		"\n\n#######################################\n## CLOSE ##" +
+			"\n" + time.Now().String() +
+			"\n#######################################\n",
+	)
+	if err != nil {
+		panic(err)
+	}
+    logFile.Close()
+}
+
 func Log(message string) {
 	if _, err := logFile.WriteString("\n" + message + ": " + time.Now().String()); err != nil {
 		panic(err)
