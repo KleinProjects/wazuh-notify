@@ -35,10 +35,10 @@ func InitNotify() types.Params {
 
 	wazuhInput()
 
-	yamlFile, err := os.ReadFile(path.Join(BasePath, "../../etc/config.yaml"))
+	yamlFile, err := os.ReadFile(path.Join(BasePath, "../../etc/wazuh-notify-config.yaml"))
 	if err != nil {
 		log.Log("yaml failed to load")
-		yamlFile, err = os.ReadFile(path.Join(BasePath, "config.yaml"))
+		yamlFile, err = os.ReadFile(path.Join(BasePath, "wazuh-notify-config.yaml"))
 	}
 	yaml.Unmarshal(yamlFile, &configParams)
 

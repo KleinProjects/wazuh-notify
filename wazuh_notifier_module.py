@@ -16,8 +16,8 @@ def get_env():
             raise Exception(dotenv_path, "file not found")
 
         # Retrieve url from .env
-        discord_url = os.getenv("DISCORD_url")
-        ntfy_url = os.getenv("NTFY_url")
+        discord_url = os.getenv("DISCORD_URL")
+        ntfy_url = os.getenv("NTFY_URL")
 
     except Exception as err:
         # output error, and return with an error code
@@ -25,6 +25,7 @@ def get_env():
         exit(err)
 
     return discord_url, ntfy_url
+
 
 # Set structured timestamp for logging and discord/ntfy message.
 
@@ -37,7 +38,7 @@ def set_time():
 
 # Define paths: wazuh_path = wazuh root directory
 #               ar_path = active-responses.log path,
-#               config_path = wazuh-notifier-config.yaml
+#               config_path = wazuh-notifier-wazuh-notify-config.yaml
 
 def set_environment():
     # todo fix reference when running manually/in process
@@ -45,12 +46,12 @@ def set_environment():
     wazuh_path = "/var/ossec"
     # wazuh_path = os.path.abspath(os.path.join(__file__, "../../.."))
     ar_path = '{0}/logs/active-responses.log'.format(wazuh_path)
-    config_path = 'wazuh-notifier-conf.yaml'.format(wazuh_path)
+    config_path = 'wazuh-notifier-wazuh-notify-config.yaml'.format(wazuh_path)
 
     return wazuh_path, ar_path, config_path
 
 
-# Import configuration settings from wazuh-notifier-config.yaml
+# Import configuration settings from wazuh-notifier-wazuh-notify-config.yaml
 
 
 def import_config():
@@ -64,7 +65,7 @@ def import_config():
         return None
 
 
-# Show configuration settings from wazuh-notifier-config.yaml
+# Show configuration settings from wazuh-notifier-wazuh-notify-config.yaml
 
 
 def view_config():
@@ -95,33 +96,39 @@ def threat_priority_mapping(threat_level, np_1, np_2, np_3, np_4, np_5):
 
     if threat_level in np_1:
         priority_mapping = "1"
+        priority_color = 0x339900
     elif threat_level in np_2:
         priority_mapping = "2"
+        priority_color = 0x99cc33
     elif threat_level in np_3:
         priority_mapping = "3"
+        priority_color = 0xffcc00
     elif threat_level in np_4:
         priority_mapping = "4"
+        priority_color = 0xff9966
     elif threat_level in np_5:
         priority_mapping = "5"
+        priority_color = 0xcc3300
     else:
         priority_mapping = "3"
+        priority_color = 0xffcc00
 
-    return priority_mapping
+    return priority_mapping, priority_color
 
 
 def get_yaml_config():
     config = import_config()
 
-    config['np_1'] = "3, 3, 3" if (config.get("notifier_priority_1") is None) else config.get("notifier_priority_1")
-    config['np_2'] = "4, 5" if (config.get("notifier_priority_2") is None) else config.get("notifier_priority_2")
-    config['np_3'] = "6, 7" if (config.get("notifier_priority_3") is None) else config.get("notifier_priority_3")
-    config['np_4'] = "8, 9" if (config.get("notifier_priority_4") is None) else config.get("notifier_priority_4")
-    config['np_5'] = "10, 11, 12" if (config.get("notifier_priority_5") is None) else config.get("notifier_priority_5")
-    config['targets'] = "ntfy, discord" if (config.get("targets") is None) else config.get("targets")
-    config['excluded_rules'] = "" if (config.get("excluded_rules") is None) else config.get("excluded_rules")
-    config['excluded_agents'] = "" if (config.get("excluded_agents") is None) else config.get("excluded_agents")
-    config['sender'] = "Wazuh (IDS)" if (config.get("sender") is None) else config.get("sender")
-    config['click'] = "https://wazuh.org" if (config.get("click") is None) else config.get("click")
+    config['np_1'] = config.get('np_1', '1, 2, 3')
+    config['np_2'] = config.get('np_2', '4,5')
+    config['np_3'] = config.get('np_3', '6,7')
+    config['np_4'] = config.get('np_4', '8,9')
+    config['np_5'] = config.get('np_5', '10, 11, 12')
+    config['targets'] = config.get('targets', 'ntfy, discord')
+    config['excluded_rules'] = config.get('excluded_rules', '')
+    config['excluded_agents'] = config.get('excluded_agents', '')
+    config['sender'] = 'Wazuh (IDS)'
+    config['click'] = 'https://wazuh.org'
 
     return config
 
@@ -154,7 +161,7 @@ def get_arguments():
     argument_list: list = sys.argv[1:]
 
     if not argument_list:
-        pass
+        return url, sender, destination, message, priority, tags, click
 
     else:
 
