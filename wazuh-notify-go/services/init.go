@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -19,22 +20,23 @@ var wazuhData types.WazuhMessage
 var BasePath string
 
 func InitNotify() types.Params {
-	BasePath, _ := os.Executable()
+	BaseFilePath, _ := os.Executable()
+	BaseDirPath := path.Dir(BaseFilePath)
+    
+	log.OpenLogFile(BaseDirPath)
 
-	log.OpenLogFile(BasePath)
-
-	err := godotenv.Load(path.Join(BasePath, "../../etc/.env"))
+	err := godotenv.Load(path.Join(BaseDirPath, "../../etc/.env"))
 	if err != nil {
 		log.Log("env failed to load")
-		godotenv.Load(path.Join(BasePath, ".env"))
+		godotenv.Load(path.Join(BaseDirPath, ".env"))
 	} else {
 		log.Log("env loaded")
 	}
 
-	yamlFile, err := os.ReadFile(path.Join(BasePath, "../../etc/wazuh-notify-config.yaml"))
+	yamlFile, err := os.ReadFile(path.Join(BaseDirPath, "../../etc/wazuh-notify-config.yaml"))
 	if err != nil {
 		log.Log("yaml failed to load")
-		yamlFile, err = os.ReadFile(path.Join(BasePath, "wazuh-notify-config.yaml"))
+		yamlFile, err = os.ReadFile(path.Join(BaseDirPath, "wazuh-notify-config.yaml"))
 	}
 	yaml.Unmarshal(yamlFile, &configParams)
 
