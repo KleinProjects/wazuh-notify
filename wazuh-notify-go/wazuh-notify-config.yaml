@@ -16,11 +16,11 @@ excluded_agents: "999"
 
 # Priority mapping from 1-12 (Wazuh events) to 1-5 (Discord and ntfy notification)
 
-priority_1: 12, 11, 10
-priority_2: 9, 8
-priority_3: 7, 6
-priority_4: 5, 4
-priority_5: 3 ,2, 1
+priority_5: [12,11,10]
+priority_4: [9,8]
+priority_3: [7,6]
+priority_2: [5,4]
+priority_1: [3,2,1]
 
 sender: "Wazuh (IDS)"
 click: "https://google.com"

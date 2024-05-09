@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"wazuh-notify/log"
 	"wazuh-notify/types"
 )
@@ -33,8 +34,6 @@ func InitNotify() types.Params {
 		log.Log("env loaded")
 	}
 
-	wazuhInput()
-
 	yamlFile, err := os.ReadFile(path.Join(BasePath, "../../etc/wazuh-notify-config.yaml"))
 	if err != nil {
 		log.Log("yaml failed to load")
@@ -56,6 +55,8 @@ func InitNotify() types.Params {
 	log.Log("params loaded")
 	inputParams.Targets = configParams.Targets
 
+	wazuhInput()
+
 	return inputParams
 }
 
@@ -64,7 +65,9 @@ func wazuhInput() {
 
 	json.NewDecoder(reader).Decode(&wazuhData)
 
-	mapPriority()
+	inputParams.Priority = mapPriority()
+
+	inputParams.Tags += strings.Join(wazuhData.Parameters.Alert.Rule.Groups, ",")
 
 	inputParams.WazuhMessage = wazuhData
 }
