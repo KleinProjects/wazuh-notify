@@ -55,7 +55,7 @@ func SendDiscord(params types.Params) {
 		return
 	}
 
-	_, err = http.Post(os.Getenv("DISCORD_WEBHOOK"), "application/json", payload)
+	_, err = http.Post(os.Getenv("DISCORD_URL"), "application/json", payload)
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
 	}

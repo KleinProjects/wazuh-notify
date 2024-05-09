@@ -28,7 +28,7 @@ func InitNotify() types.Params {
 	err := godotenv.Load(path.Join(BasePath, "../../etc/.env"))
 	if err != nil {
 		log.Log("env failed to load")
-		godotenv.Load(path.Join(BasePath, "/.env"))
+		godotenv.Load(path.Join(BasePath, ".env"))
 	} else {
 		log.Log("env loaded")
 	}
