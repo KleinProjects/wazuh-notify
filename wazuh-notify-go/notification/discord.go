@@ -6,21 +6,43 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
+	"strings"
 	"wazuh-notify/types"
 )
 
 func SendDiscord(params types.Params) {
-	embedDescription := "\n\n" +
-		"**Agent:** " + params.WazuhMessage.Parameters.Alert.Agent.Name + "\n" +
-		"**Event id:** " + params.WazuhMessage.Parameters.Alert.Rule.ID + "\n" +
-		"**Description:** " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
-		"**Threat level:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
-		"**Times fired:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) +
-		"\n\n" +
-		"Priority: " + strconv.Itoa(params.Priority) + "\n" +
-		"Tags: " + params.Tags + "\n\n" +
-		params.Click
+
+	var embedDescription string
+
+	if slices.Contains(strings.Split(params.FullMessage, ","), "discord") {
+		fullMessage, _ := json.MarshalIndent(params.WazuhMessage, "", "  ")
+		fullMessageString := strings.ReplaceAll(string(fullMessage), `"`, "")
+		fullMessageString = strings.ReplaceAll(fullMessageString, "{", "")
+		fullMessageString = strings.ReplaceAll(fullMessageString, "}", "")
+		fullMessageString = strings.ReplaceAll(fullMessageString, "[", "")
+		fullMessageString = strings.ReplaceAll(fullMessageString, "]", "")
+		fullMessageString = strings.ReplaceAll(fullMessageString, " ,", "")
+
+		embedDescription = "\n\n ```" +
+			fullMessageString +
+			"```\n\n" +
+			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
+			"Tags: " + params.Tags + "\n\n" +
+			params.Click
+	} else {
+		embedDescription = "\n\n" +
+			"**Agent:** " + params.WazuhMessage.Parameters.Alert.Agent.Name + "\n" +
+			"**Event id:** " + params.WazuhMessage.Parameters.Alert.Rule.ID + "\n" +
+			"**Description:** " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
+			"**Threat level:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
+			"**Times fired:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) +
+			"\n\n" +
+			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
+			"Tags: " + params.Tags + "\n\n" +
+			params.Click
+	}
 
 	var color int
 

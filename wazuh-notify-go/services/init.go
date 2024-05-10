@@ -56,6 +56,9 @@ func InitNotify() types.Params {
 	log.Log(string(inputParamString))
 
 	inputParams.Targets = configParams.Targets
+	inputParams.FullMessage = configParams.FullMessage
+	inputParams.ExcludedAgents = configParams.ExcludedAgents
+	inputParams.ExcludedRules = configParams.ExcludedRules
 
 	wazuhInput()
 
@@ -72,6 +75,8 @@ func wazuhInput() {
 	inputParams.Tags += strings.Join(wazuhData.Parameters.Alert.Rule.Groups, ",")
 
 	inputParams.WazuhMessage = wazuhData
+
+	Filter()
 
 	log.Log("Wazuh data loaded")
 	inputParamString, _ := json.Marshal(inputParams)
