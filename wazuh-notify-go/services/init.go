@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"os"
 	"path"
-	"runtime"
+	"strings"
 	"wazuh-notify/log"
 	"wazuh-notify/types"
 )
@@ -16,33 +16,31 @@ import (
 var inputParams types.Params
 var configParams types.Params
 var wazuhData types.WazuhMessage
-var BasePath string
 
 func InitNotify() types.Params {
-	_, currentFile, _, _ := runtime.Caller(1)
+	BaseFilePath, _ := os.Executable()
+	BaseDirPath := path.Dir(BaseFilePath)
 
-	BasePath = path.Dir(currentFile)
+	log.OpenLogFile(BaseDirPath)
 
-	log.OpenLogFile(BasePath)
-
-	err := godotenv.Load(path.Join(BasePath, "../../etc/.env"))
+	err := godotenv.Load(path.Join(BaseDirPath, "../../etc/.env"))
 	if err != nil {
 		log.Log("env failed to load")
-		godotenv.Load(path.Join(BasePath, ".env"))
+		godotenv.Load(path.Join(BaseDirPath, ".env"))
 	} else {
 		log.Log("env loaded")
 	}
 
-	wazuhInput()
-
-	yamlFile, err := os.ReadFile(path.Join(BasePath, "../../etc/wazuh-notify-config.yaml"))
+	yamlFile, err := os.ReadFile(path.Join(BaseDirPath, "../../etc/wazuh-notify-config.yaml"))
 	if err != nil {
 		log.Log("yaml failed to load")
-		yamlFile, err = os.ReadFile(path.Join(BasePath, "wazuh-notify-config.yaml"))
+		yamlFile, err = os.ReadFile(path.Join(BaseDirPath, "wazuh-notify-config.yaml"))
 	}
 	yaml.Unmarshal(yamlFile, &configParams)
 
 	log.Log("yaml loaded")
+	configParamString, _ := json.Marshal(configParams)
+	log.Log(string(configParamString))
 
 	flag.StringVar(&inputParams.Url, "url", "", "is the webhook URL of the Discord server. It is stored in .env.")
 	flag.StringVar(&inputParams.Click, "click", configParams.Click, "is a link (URL) that can be followed by tapping/clicking inside the message. Default is https://google.com.")
@@ -54,7 +52,12 @@ func InitNotify() types.Params {
 	flag.Parse()
 
 	log.Log("params loaded")
+	inputParamString, _ := json.Marshal(inputParams)
+	log.Log(string(inputParamString))
+
 	inputParams.Targets = configParams.Targets
+
+	wazuhInput()
 
 	return inputParams
 }
@@ -64,7 +67,13 @@ func wazuhInput() {
 
 	json.NewDecoder(reader).Decode(&wazuhData)
 
-	mapPriority()
+	inputParams.Priority = mapPriority()
+
+	inputParams.Tags += strings.Join(wazuhData.Parameters.Alert.Rule.Groups, ",")
 
 	inputParams.WazuhMessage = wazuhData
+
+	log.Log("Wazuh data loaded")
+	inputParamString, _ := json.Marshal(inputParams)
+	log.Log(string(inputParamString))
 }

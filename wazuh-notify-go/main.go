@@ -20,4 +20,5 @@ func main() {
 			notification.SendNtfy(inputParams)
 		}
 	}
+    log.CloseLogFile()
 }
