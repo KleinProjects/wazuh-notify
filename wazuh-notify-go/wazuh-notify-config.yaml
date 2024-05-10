@@ -4,10 +4,8 @@
 # This is the yaml config file for both the wazuh-ntfy-notifier.py and wazuh-discord-notifier.py.
 # The yaml needs to be in the same folder as the wazuh-ntfy-notifier.py and wazuh-discord-notifier.py
 
-# COMMON (custom-wazuh-notifiers.py) configuration settings start here.
-# 1 =  messages will be sent through this message server. 0 = messages will NOT be sent through this message server.
-
 targets: "discord,ntfy"
+full_message: "discord,ntfy"
 
 # Exclude rules that are listed in the ossec.conf active response definition.
 
