@@ -1,11 +1,41 @@
+import datetime
 import getopt
+import json
 import os
 import sys
 import time
 from os.path import join, dirname
+from pathlib import PureWindowsPath, PurePosixPath
 
 import yaml
 from dotenv import load_dotenv
+
+
+def set_environment() -> tuple:
+    # todo fix reference when running manually/in process
+
+    set_wazuh_path = "/home/rudi/pycharm"
+    # set_wazuh_path = os.path.abspath(os.path.join(__file__, "../../.."))
+    set_ar_path = '{0}/logs/active-responses.log'.format(set_wazuh_path)
+    set_config_path = '{0}/etc/wazuh-notify-config.yaml'.format(set_wazuh_path)
+    set_notifier_path = '{0}/active-response/bin'.format(set_wazuh_path)
+
+    return set_wazuh_path, set_ar_path, set_config_path, set_notifier_path
+
+
+# Define paths: wazuh_path = wazuh root directory
+#               ar_path = active-responses.log path,
+#               config_path = wazuh-notifier-wazuh-notify-config.yaml
+
+wazuh_path, ar_path, config_path, notifier_path = set_environment()
+
+
+# Debug writer
+def write_debug_file(ar_name, msg):
+    with open(ar_path, mode="a") as log_file:
+        ar_name_posix = str(PurePosixPath(PureWindowsPath(ar_name[ar_name.find("active-response"):])))
+        log_file.write(
+            str(datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')) + " " + ar_name_posix + ": " + msg + "\n")
 
 
 def get_env():
@@ -36,46 +66,51 @@ def set_time():
     return now_message, now_logging
 
 
-# Define paths: wazuh_path = wazuh root directory
-#               ar_path = active-responses.log path,
-#               config_path = wazuh-notifier-wazuh-notify-config.yaml
-
-def set_environment():
-    # todo fix reference when running manually/in process
-
-    wazuh_path = "/var/ossec"
-    # wazuh_path = os.path.abspath(os.path.join(__file__, "../../.."))
-    ar_path = '{0}/logs/active-responses.log'.format(wazuh_path)
-    config_path = 'wazuh-notifier-wazuh-notify-config.yaml'.format(wazuh_path)
-
-    return wazuh_path, ar_path, config_path
-
-
-# Import configuration settings from wazuh-notifier-wazuh-notify-config.yaml
+# Import configuration settings from wazuh-notify-config.yaml
 
 
 def import_config():
     try:
-        _, _, config_path = set_environment()
+        _, _, this_config_path, _ = set_environment()
 
-        with open(config_path, 'r') as ntfier_config:
+        with open(this_config_path, 'r') as ntfier_config:
             config: dict = yaml.safe_load(ntfier_config)
             return config
     except (FileNotFoundError, PermissionError, OSError):
         return None
 
 
-# Show configuration settings from wazuh-notifier-wazuh-notify-config.yaml
+# Process configuration settings from wazuh-notify-config.yaml
+
+
+def get_config():
+    config = import_config()
+
+    config['np_5'] = config.get('np_1', [15, 14, 13, 12])
+    config['np_4'] = config.get('np_2', [11, 10, 9])
+    config['np_3'] = config.get('np_3', [8, 7, 6])
+    config['np_2'] = config.get('np_4', [5, 4])
+    config['np_1'] = config.get('np_5', [3, 2, 1, 0])
+    config['targets'] = config.get('targets', 'ntfy, discord')
+    config['excluded_rules'] = config.get('excluded_rules', '')
+    config['excluded_agents'] = config.get('excluded_agents', '')
+    config['sender'] = 'Wazuh (IDS)'
+    config['click'] = 'https://wazuh.org'
+
+    return config
+
+
+# Show configuration settings from wazuh-notify-config.yaml
 
 
 def view_config():
-    _, _, config_path = set_environment()
+    _, _, this_config_path, _ = set_environment()
 
     try:
-        with open(config_path, 'r') as ntfier_config:
+        with open(this_config_path, 'r') as ntfier_config:
             print(ntfier_config.read())
     except (FileNotFoundError, PermissionError, OSError):
-        print(config_path + " does not exist or is not accessible")
+        print(this_config_path + " does not exist or is not accessible")
         return
 
 
@@ -84,53 +119,49 @@ def view_config():
 
 def ar_log():
     now = set_time()
-    _, ar_path, _ = set_environment()
+    _, this_ar_path, _, _ = set_environment()
     msg = '{0} {1} {2}'.format(now, os.path.realpath(__file__), 'Post JSON Alert')
-    f = open(ar_path, 'a')
+    f = open(this_ar_path, 'a')
     f.write(msg + '\n')
     f.close()
 
 
-def threat_priority_mapping(threat_level, np_1, np_2, np_3, np_4, np_5):
+def threat_mapping(threat_level, np_1, np_2, np_3, np_4, np_5):
     # Map threat level v/s priority
 
     if threat_level in np_1:
         priority_mapping = "1"
-        priority_color = 0x339900
     elif threat_level in np_2:
         priority_mapping = "2"
-        priority_color = 0x99cc33
     elif threat_level in np_3:
         priority_mapping = "3"
-        priority_color = 0xffcc00
     elif threat_level in np_4:
         priority_mapping = "4"
-        priority_color = 0xff9966
     elif threat_level in np_5:
         priority_mapping = "5"
-        priority_color = 0xcc3300
     else:
         priority_mapping = "3"
+
+    return priority_mapping
+
+
+def color_mapping(priority):
+    # Map priority to color
+
+    if priority == 1:
+        priority_color = 0x339900
+    elif priority == 2:
+        priority_color = 0x99cc33
+    elif priority == 3:
+        priority_color = 0xffcc00
+    elif priority == 4:
+        priority_color = 0xff9966
+    elif priority == 5:
+        priority_color = 0xcc3300
+    else:
         priority_color = 0xffcc00
 
-    return priority_mapping, priority_color
-
-
-def get_yaml_config():
-    config = import_config()
-
-    config['np_1'] = config.get('np_1', '1, 2, 3')
-    config['np_2'] = config.get('np_2', '4,5')
-    config['np_3'] = config.get('np_3', '6,7')
-    config['np_4'] = config.get('np_4', '8,9')
-    config['np_5'] = config.get('np_5', '10, 11, 12')
-    config['targets'] = config.get('targets', 'ntfy, discord')
-    config['excluded_rules'] = config.get('excluded_rules', '')
-    config['excluded_agents'] = config.get('excluded_agents', '')
-    config['sender'] = 'Wazuh (IDS)'
-    config['click'] = 'https://wazuh.org'
-
-    return config
+    return priority_color
 
 
 def get_arguments():
@@ -155,8 +186,15 @@ def get_arguments():
          -v, --view          show config.
 
     """
+    url: str
+    sender: str
+    destination: str
+    message: str
+    priority: int
+    tags: str
+    click: str
 
-    url, sender, destination, message, priority, tags, click = "", "", "", "", "", "", ""
+    url, sender, destination, message, priority, tags, click = "", "", "", "", 0, "", ""
 
     argument_list: list = sys.argv[1:]
 
@@ -181,28 +219,83 @@ def get_arguments():
                     exit()
 
                 elif current_argument in ("-u", "--url"):
-                    url = current_value
+                    url: str = current_value
 
                 elif current_argument in ("-s", "--sender"):
-                    sender = current_value
+                    sender: str = current_value
 
                 elif current_argument in ("-d", "--destination"):
-                    destination = current_value
+                    destination: str = current_value
 
                 elif current_argument in ("-p", "--priority"):
-                    priority = current_value
+                    priority: int = current_value
 
                 elif current_argument in ("-m", "--message"):
-                    message = current_value
+                    message: str = current_value
 
                 elif current_argument in ("-t", "--tags"):
-                    tags = current_value
+                    tags: str = current_value
 
                 elif current_argument in ("-c", "--click"):
-                    click = current_value
+                    click: str = current_value
 
         except getopt.error as err:
             # output error, and return with an error code
             print(str(err))
 
         return url, sender, destination, message, priority, tags, click
+
+
+def load_message(argv):
+    # get alert from stdin
+    input_str: str = ""
+    for line in sys.stdin:
+        input_str: str = line
+        break
+
+    data: json = json.loads(input_str)
+
+    if data.get("command") == "add":
+        return data
+    else:
+        # todo fix error message
+        sys.exit(1)
+
+
+def parameters_deconstruct(argv, event_keys):
+    config: dict = get_config()
+
+    a_id: str = str(event_keys["agent"]["id"])
+    a_name: str = str(event_keys["agent"]["name"])
+    e_id: str = str(event_keys["rule"]["id"])
+    e_description: str = str(event_keys["rule"]["description"])
+    e_level: str = str(event_keys["rule"]["level"])
+    e_fired_times: str = str(event_keys["rule"]["firedtimes"])
+    e_full_event: str = str(json.dumps(event_keys, indent=4).replace('"', '')
+                            .replace('{', '')
+                            .replace('}', '')
+                            .replace('[', '')
+                            .replace(']', '')
+                            )
+
+    if e_id not in config["excluded_rules"] or a_id not in config["excluded_agents"]:
+        parameters: dict = dict(a_id=a_id, a_name=a_name, e_id=e_id, e_description=e_description, e_level=e_level,
+                                e_fired_times=e_fired_times, e_full_event=e_full_event)
+        return parameters
+
+
+def construct_basic_message(argv, accent: str, a_id: str, a_name: str, e_id: str, e_description: str, e_level: str,
+                            e_fired_times: str) -> str:
+    # Adding the BOLD text string to the Discord message. Ntfy has a different message format.
+
+    basic_message: str = ("--message " + '"' +
+                          accent + "Agent: " + accent + a_name + " (" + a_id + ")" + "\n" +
+                          accent + "Event id: " + accent + e_id + "\n" +
+                          accent + "Description: " + accent + e_description + "\n" +
+                          accent + "Threat level: " + accent + e_level + "\n" +
+                          # Watch this last addition to the string. It should include the closing quote for the
+                          # basic_message string. It must be closed by -> '"'. This will be done outside this function
+                          # in order to enable another specific addition (event_full_message) in the calling procedure.
+                          accent + "Times fired: " + accent + e_fired_times + "\n")
+
+    return basic_message

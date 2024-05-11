@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 # This script is adapted version of the Python active response script sample, provided by Wazuh, in the documentation:
 # https://documentation.wazuh.com/current/user-manual/capabilities/active-response/custom-active-response-scripts.html
 # It is provided under the below copyright statement:
@@ -13,244 +12,116 @@
 #           License (version 2) as published by the FSF - Free Software
 #           Foundation.
 #
-# This version has changes in
-# 1) the first lines of code with the assignments, and
-# 2) the Start Custom Action Add section
 # This adapted version is free software. Rudi Klein, april 2024
 
-import datetime
-import json
 import os
 import sys
-from pathlib import PureWindowsPath, PurePosixPath
 
-from wazuh_notifier_module import import_config as ic
-from wazuh_notifier_module import set_environment as se
+from wazuh_notifier_module import construct_basic_message
+from wazuh_notifier_module import get_config
+from wazuh_notifier_module import parameters_deconstruct
+from wazuh_notifier_module import set_environment
+from wazuh_notifier_module import threat_mapping
 
-# Some variable assignments
+# Path variable assignments
 
-wazuh_path, ar_path, config_path = se()
-
-ADD_COMMAND = 0
-DELETE_COMMAND = 1
-CONTINUE_COMMAND = 2
-ABORT_COMMAND = 3
-
-OS_SUCCESS = 0
-OS_INVALID = -1
-
-
-class Message:
-
-    def __init__(self):
-        self.alert = ""
-        self.command = 0
-
-
-def write_debug_file(ar_name, msg):
-    with open(ar_path, mode="a") as log_file:
-        ar_name_posix = str(PurePosixPath(PureWindowsPath(ar_name[ar_name.find("active-response"):])))
-        log_file.write(
-            str(datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')) + " " + ar_name_posix + ": " + msg + "\n")
-
-
-def setup_and_check_message(argv):
-    # get alert from stdin
-    input_str = ""
-    for line in sys.stdin:
-        input_str = line
-        break
-
-    write_debug_file(argv[0], input_str)
-
-    try:
-        data = json.loads(input_str)
-    except ValueError:
-        write_debug_file(argv[0], 'Decoding JSON has failed, invalid input format')
-        Message.command = OS_INVALID
-        return Message
-
-    Message.alert = data
-
-    command = data.get("command")
-
-    if command == "add":
-        Message.command = ADD_COMMAND
-    elif command == "delete":
-        Message.command = DELETE_COMMAND
-    else:
-        Message.command = OS_INVALID
-        write_debug_file(argv[0], 'Not valid command: ' + command)
-
-    return Message
-
-
-def send_keys_and_check_message(argv, keys):
-    # build and send message with keys
-    keys_msg = json.dumps(
-        {"version": 1, "origin": {"name": argv[0], "module": "active-response"}, "command": "check_keys",
-         "parameters": {"keys": keys}})
-
-    write_debug_file(argv[0], keys_msg)
-
-    print(keys_msg)
-    sys.stdout.flush()
-
-    # read the response of previous message
-    input_str = ""
-    while True:
-        line = sys.stdin.readline()
-        if line:
-            input_str = line
-            break
-
-    write_debug_file(argv[0], input_str)
-
-    try:
-        data = json.loads(input_str)
-    except ValueError:
-        write_debug_file(argv[0], 'Decoding JSON has failed, invalid input format')
-        return Message
-
-    action = data.get("command")
-
-    if "continue" == action:
-        ret = CONTINUE_COMMAND
-    elif "abort" == action:
-        ret = ABORT_COMMAND
-    else:
-        ret = OS_INVALID
-        write_debug_file(argv[0], "Invalid value of 'command'")
-
-    return ret
-
-
-def parameters_deconstruct(argv, event_keys):
-    a_id: str = str(event_keys["agent"]["id"])
-    a_name: str = str(event_keys["agent"]["name"])
-    e_id: str = str(event_keys["rule"]["id"])
-    e_description: str = str(event_keys["rule"]["description"])
-    e_level: str = str(event_keys["rule"]["level"])
-    e_fired_times: str = str(event_keys["rule"]["firedtimes"])
-    e_full_event: str = str(json.dumps(event_keys, indent=0).replace('"', '')
-                            .replace('{', '')
-                            .replace('}', '')
-                            .replace('[', '')
-                            .replace(']', '')
-                            .replace(',', '')
-                            .replace(' ', '')
-                            )
-
-    if e_id in ic("excluded_rules") or a_id in ic("excluded_agents"):
-
-        write_debug_file(argv[0], "Excluded rule or agent: " + e_id + "/" + a_id)
-
-    else:
-
-        return a_id, a_name, e_id, e_description, e_level, e_fired_times, e_full_event
-
-
-def construct_basic_message(argv, accent: str, a_id: str, a_name: str, e_id: str, e_description: str, e_level: str,
-                            e_fired_times: str):
-    # Adding the BOLD text string to the Discord message. Ntfy has a different message format.
-
-    basic_message: str = ("--message " + '"' +
-                          accent + "Agent: " + accent + a_name + " (" + a_id + ")" + "\n" +
-                          accent + "Event id: " + accent + e_id + "\n" +
-                          accent + "Description: " + accent + e_description + "\n" +
-                          accent + "Threat level: " + accent + e_level + "\n" +
-                          # Watch this last addition to the string. It should include the closing quote for the
-                          # basic_message string. It must be closed by -> '"'. This will be done outside this function
-                          # in order to enable another specific addition (event_full_message) in the calling procedure.
-                          accent + "Times fired: " + accent + e_fired_times + "\n")
-
-    return basic_message
+wazuh_path, ar_path, config_path, notifier_path = set_environment()
 
 
 def main(argv):
-    write_debug_file(argv[0], "Started")
 
     # validate json and get command
-    msg = setup_and_check_message(argv)
 
-    if msg.command < 0:
-        sys.exit(OS_INVALID)
+    # data = load_message(argv)
+    # This example event can be used for troubleshooting. Comment out the line above and uncomment the line below.
+    data: dict = {"version": 1, "origin": {"name": "worker01", "module": "wazuh-execd"}, "command": "add",
+                  "parameters": {"extra_args": [], "alert": {"timestamp": "2021-02-01T20:58:44.830+0000",
+                                                             "rule": {"level": 15,
+                                                                      "description": "Shellshock attack detected",
+                                                                      "id": "31168", "mitre": {"id": ["T1068", "T1190"],
+                                                                                               "tactic": [
+                                                                                                   "Privilege Escalation",
+                                                                                                   "Initial Access"],
+                                                                                               "technique": [
+                                                                                                   "Exploitation for Privilege Escalation",
+                                                                                                   "Exploit Public-Facing Application"]},
+                                                                      "info": "CVE-2014-6271https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271",
+                                                                      "firedtimes": 2, "mail": "true",
+                                                                      "groups": ["web", "accesslog", "attack"],
+                                                                      "pci_dss": ["11.4"], "gdpr": ["IV_35.7.d"],
+                                                                      "nist_800_53": ["SI.4"],
+                                                                      "tsc": ["CC6.1", "CC6.8", "CC7.2", "CC7.3"]},
+                                                             "agent": {"id": "000", "name": "wazuh-server"},
+                                                             "manager": {"name": "wazuh-server"},
+                                                             "id": "1612213124.6448363",
+                                                             "full_log": "192.168.0.223 - - [01/Feb/2021:20:58:43 +0000] \"GET / HTTP/1.1\" 200 612 \"-\" \"() { :; }; /bin/cat /etc/passwd\"",
+                                                             "decoder": {"name": "web-accesslog"},
+                                                             "data": {"protocol": "GET", "srcip": "192.168.0.223",
+                                                                      "id": "200", "url": "/"},
+                                                             "location": "/var/log/nginx/access.log"},
+                                 "program": "/var/ossec/active-response/bin/firewall-drop"}}
 
-    if msg.command == ADD_COMMAND:
+    alert = data["parameters"]["alert"]
 
-        """ Start Custom Key
-        At this point, it is necessary to select the keys from the alert and add them into the keys array.
-        """
+    # Get the threat level from the event (message)
+    threat_level = data["parameters"]["alert"]["rule"]["level"]
 
-        alert = msg.alert["parameters"]["alert"]
-        keys = [alert["rule"]]
+    parameters: dict = parameters_deconstruct(argv, alert)
 
-        agent_id, agent_name, event_id, event_description, event_level, event_fired_times, event_full_message = \
-            parameters_deconstruct(argv, alert)
+    # Get the YAML config if any
+    config: dict = get_config()
 
-        action = send_keys_and_check_message(argv, keys)
+    # Get the mapping between threat level (event) and priority (Discord/ntfy)
+    threat_priority = threat_mapping(threat_level, config.get('np_1'), config.get('np_2'),
+                                     config.get('np_3'), config.get('np_4'), config.get('np_5'))
 
-        # if necessary, abort execution
-        if action != CONTINUE_COMMAND:
-
-            if action == ABORT_COMMAND:
-                write_debug_file(argv[0], "Aborted")
-                sys.exit(OS_SUCCESS)
-            else:
-                write_debug_file(argv[0], "Invalid command")
-                sys.exit(OS_INVALID)
-
-        """ Start Custom Action Add """
-
-        if str(ic("discord_enabled")) == "1":
-
-            accent = "**"
-            discord_notifier = '{0}/active-response/bin/wazuh-discord-notifier.py'.format(wazuh_path)
-            discord_exec = "python3 " + discord_notifier + " "
-            write_debug_file(argv[0], "Start Discord notifier")
-            discord_message = construct_basic_message(argv, accent, agent_id, agent_name, event_id, event_description,
-                                                      event_level, event_fired_times)
-
-            if ic("discord_full_message") == "1":
-                discord_message = discord_message + "\n" + accent + "__Full event__" + accent + event_full_message + '"'
-            else:
-                discord_message = discord_message + '"'
-            discord_command = discord_exec + discord_message
-            os.system(discord_command)
-
-        if str(ic("ntfy_enabled")) == "1":
-            accent = ""
-            ntfy_notifier = '{0}/active-response/bin/wazuh-ntfy-notifier.py'.format(wazuh_path)
-            ntfy_exec = "python3 " + ntfy_notifier + " "
-            write_debug_file(argv[0], "Start NTFY notifier")
-            ntfy_message = construct_basic_message(argv, accent, agent_id, agent_name, event_level, event_description,
-                                                   event_id, event_fired_times)
-
-            # If the full message flag is set, the full message PLUS the closing parenthesis will be added
-            if ic("ntfy_full_message") == "1":
-                ntfy_message = ntfy_message + "\n" + "Full event" + event_full_message + '"'
-            else:
-                ntfy_message = ntfy_message + '"'
-
-            ntfier_command = ntfy_exec + ntfy_message
-            os.system(ntfier_command)
-
-        """ End Custom Action Add """
-
-    elif msg.command == DELETE_COMMAND:
-
-        """ Start Custom Action Delete """
-
-        pass
-
-        """ End Custom Action Delete """
-
+    if "discord" in config["targets"]:
+        accent: str = "**"
+    elif "ntfy" in config["targets"]:
+        accent: str = ""
     else:
-        write_debug_file(argv[0], "Invalid command")
+        accent: str = ""
 
-    write_debug_file(argv[0], "Ended")
+    notifier_message: str = construct_basic_message(argv, accent,
+                                                    parameters.get('a_id', '000'),
+                                                    parameters.get('a_name', 'agent not found'),
+                                                    parameters.get('e_id', '9999'),
+                                                    parameters.get('e_description', 'Event not found'),
+                                                    parameters.get('e_level', '9999'),
+                                                    parameters.get('e_fired_times', '3')
+                                                    )
 
-    sys.exit(OS_SUCCESS)
+    if "discord" in config["targets"]:
+
+        discord_notifier: str = '{0}/active-response/bin/wazuh-discord-notifier.py'.format(wazuh_path)
+        discord_exec: str = "python3 " + discord_notifier + " "
+
+        discord_message: str = notifier_message
+
+        if "discord" in config["full_message"]:
+            discord_message: str = (discord_message + "\n" + accent + "__Full event__" +
+                                    accent + parameters['e_full_event'] + '"')
+        else:
+            discord_message: str = discord_message + '"'
+
+        discord_command: str = discord_exec + discord_message
+        os.system(discord_command)
+
+    if "ntfy" in config["targets"]:
+
+        ntfy_notifier: str = '{0}/active-response/bin/wazuh-ntfy-notifier.py'.format(wazuh_path)
+        ntfy_exec: str = "python3 " + ntfy_notifier + " "
+        ntfy_message: str = notifier_message
+
+        # If the full message flag is set, the full message PLUS the closing parenthesis will be added
+        if "ntfy" in config["full_message"]:
+            ntfy_message: str = ntfy_message + "\n" + "Full event" + parameters['e_full_event'] + '"'
+
+        else:
+            ntfy_message: str = ntfy_message + '"'
+
+        ntfy_command: str = ntfy_exec + ntfy_message
+        os.system(ntfy_command)
 
 
 if __name__ == "__main__":
