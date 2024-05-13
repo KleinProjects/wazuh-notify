@@ -1,18 +1,23 @@
 package types
 
 type Params struct {
-	Url          string
-	Sender       string `yaml:"sender,omitempty"`
-	Priority     int
-	Tags         string
-	Click        string `yaml:"click,omitempty"`
-	Targets      string `yaml:"targets,omitempty"`
-	WazuhMessage WazuhMessage
-	Priority1    []int `yaml:"priority_1"`
-	Priority2    []int `yaml:"priority_2"`
-	Priority3    []int `yaml:"priority_3"`
-	Priority4    []int `yaml:"priority_4"`
-	Priority5    []int `yaml:"priority_5"`
+	Url            string
+	Sender         string `yaml:"sender,omitempty"`
+	Priority       int
+	Tags           string
+	Click          string `yaml:"click,omitempty"`
+	Targets        string `yaml:"targets,omitempty"`
+	FullMessage    string `yaml:"full_message,omitempty"`
+	ExcludedRules  string `yaml:"excluded_rules,omitempty"`
+	ExcludedAgents string `yaml:"excluded_agents,omitempty"`
+	WazuhMessage   WazuhMessage
+	PriorityMaps   []PriorityMap `yaml:"priority_map"`
+}
+
+type PriorityMap struct {
+	ThreatMap        []int `yaml:"threat_map"`
+	MentionThreshold int   `yaml:"mention_threshold"`
+	Color            int   `yaml:"color"`
 }
 
 type Message struct {
