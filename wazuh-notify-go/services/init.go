@@ -36,7 +36,10 @@ func InitNotify() types.Params {
 		log.Log("yaml failed to load")
 		yamlFile, err = os.ReadFile(path.Join(BaseDirPath, "wazuh-notify-config.yaml"))
 	}
-	yaml.Unmarshal(yamlFile, &configParams)
+	err = yaml.Unmarshal(yamlFile, &configParams)
+	if err != nil {
+		print(err)
+	}
 
 	log.Log("yaml loaded")
 	configParamString, _ := json.Marshal(configParams)
@@ -59,6 +62,7 @@ func InitNotify() types.Params {
 	inputParams.FullMessage = configParams.FullMessage
 	inputParams.ExcludedAgents = configParams.ExcludedAgents
 	inputParams.ExcludedRules = configParams.ExcludedRules
+	inputParams.PriorityMaps = configParams.PriorityMaps
 
 	wazuhInput()
 

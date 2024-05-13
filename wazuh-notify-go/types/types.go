@@ -11,11 +11,12 @@ type Params struct {
 	ExcludedRules  string `yaml:"excluded_rules,omitempty"`
 	ExcludedAgents string `yaml:"excluded_agents,omitempty"`
 	WazuhMessage   WazuhMessage
-	Priority1      []int `yaml:"priority_1"`
-	Priority2      []int `yaml:"priority_2"`
-	Priority3      []int `yaml:"priority_3"`
-	Priority4      []int `yaml:"priority_4"`
-	Priority5      []int `yaml:"priority_5"`
+	PriorityMaps   []PriorityMap `yaml:"priority_map"`
+}
+
+type PriorityMap struct {
+	ThreatMap        []int `yaml:"threat_map"`
+	MentionThreshold int   `yaml:"mention_threshold"`
 }
 
 type Message struct {

@@ -35,7 +35,8 @@ func SendDiscord(params types.Params) {
 		embedDescription = "\n\n" +
 			"**Agent:** " + params.WazuhMessage.Parameters.Alert.Agent.Name + "\n" +
 			"**Event id:** " + params.WazuhMessage.Parameters.Alert.Rule.ID + "\n" +
-			"**Description:** " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
+			"**Rule:** " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
+			"**Description: **" + params.WazuhMessage.Parameters.Alert.FullLog + "\n" +
 			"**Threat level:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
 			"**Times fired:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) +
 			"\n\n" +
@@ -45,22 +46,39 @@ func SendDiscord(params types.Params) {
 	}
 
 	var color int
+	var mention string
 
 	switch params.Priority {
 	case 1:
 		color = 0x339900
+		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[4].MentionThreshold {
+			mention = "@here"
+		}
 	case 2:
 		color = 0x99cc33
+		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[3].MentionThreshold {
+			mention = "@here"
+		}
 	case 3:
 		color = 0xffcc00
+		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[2].MentionThreshold {
+			mention = "@here"
+		}
 	case 4:
 		color = 0xff9966
+		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[1].MentionThreshold {
+			mention = "@here"
+		}
 	case 5:
 		color = 0xcc3300
+		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[0].MentionThreshold {
+			mention = "@here"
+		}
 	}
 
 	message := types.Message{
 		Username: params.Sender,
+		Content:  mention,
 		Embeds: []types.Embed{
 			{
 				Title:       params.Sender,
