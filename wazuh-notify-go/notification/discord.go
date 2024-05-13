@@ -50,27 +50,27 @@ func SendDiscord(params types.Params) {
 
 	switch params.Priority {
 	case 1:
-		color = 0x339900
+		color = params.PriorityMaps[4].Color
 		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[4].MentionThreshold {
 			mention = "@here"
 		}
 	case 2:
-		color = 0x99cc33
+		color = params.PriorityMaps[3].Color
 		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[3].MentionThreshold {
 			mention = "@here"
 		}
 	case 3:
-		color = 0xffcc00
+		color = params.PriorityMaps[2].Color
 		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[2].MentionThreshold {
 			mention = "@here"
 		}
 	case 4:
-		color = 0xff9966
+		color = params.PriorityMaps[1].Color
 		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[1].MentionThreshold {
 			mention = "@here"
 		}
 	case 5:
-		color = 0xcc3300
+		color = params.PriorityMaps[0].Color
 		if params.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= params.PriorityMaps[0].MentionThreshold {
 			mention = "@here"
 		}

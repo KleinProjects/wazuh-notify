@@ -17,6 +17,7 @@ type Params struct {
 type PriorityMap struct {
 	ThreatMap        []int `yaml:"threat_map"`
 	MentionThreshold int   `yaml:"mention_threshold"`
+	Color            int   `yaml:"color"`
 }
 
 type Message struct {

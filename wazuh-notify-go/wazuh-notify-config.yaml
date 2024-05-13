@@ -19,18 +19,23 @@ priority_map:
   -
     threat_map: [15,14,13,12]
     mention_threshold: 1
+    color: 0xcc3300
   -
     threat_map: [11,10,9]
     mention_threshold: 1
+    color: 0xff9966
   -
     threat_map: [8,7,6]
     mention_threshold: 5
+    color: 0xffcc00
   -
     threat_map: [5,4]
     mention_threshold: 5
+    color: 0x99cc33
   -
     threat_map: [3,2,1,0]
     mention_threshold: 5
+    color: 0x339900
 
 
 sender: "Wazuh (IDS)"
