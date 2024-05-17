@@ -75,6 +75,10 @@ func wazuhInput() {
 
 	json.NewDecoder(reader).Decode(&wazuhData)
 
+	inputParams.Tags += strings.Join(wazuhData.Parameters.Alert.Rule.Groups, ",")
+
+	inputParams.WazuhMessage = wazuhData
+
 	for i, _ := range configParams.PriorityMaps {
 		if slices.Contains(configParams.PriorityMaps[i].ThreatMap, wazuhData.Parameters.Alert.Rule.Level) {
 			inputParams.Color = inputParams.PriorityMaps[i].Color
@@ -84,10 +88,6 @@ func wazuhInput() {
 			inputParams.Priority = 5 - i
 		}
 	}
-
-	inputParams.Tags += strings.Join(wazuhData.Parameters.Alert.Rule.Groups, ",")
-
-	inputParams.WazuhMessage = wazuhData
 
 	Filter()
 
