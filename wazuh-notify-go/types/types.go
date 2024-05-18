@@ -10,6 +10,8 @@ type Params struct {
 	FullMessage    string `yaml:"full_message,omitempty"`
 	ExcludedRules  string `yaml:"excluded_rules,omitempty"`
 	ExcludedAgents string `yaml:"excluded_agents,omitempty"`
+	Color          int
+	Mention        string
 	WazuhMessage   WazuhMessage
 	PriorityMaps   []PriorityMap `yaml:"priority_map"`
 }

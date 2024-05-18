@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"wazuh-notify/log"
 	"wazuh-notify/types"
@@ -74,11 +75,19 @@ func wazuhInput() {
 
 	json.NewDecoder(reader).Decode(&wazuhData)
 
-	inputParams.Priority = mapPriority()
-
 	inputParams.Tags += strings.Join(wazuhData.Parameters.Alert.Rule.Groups, ",")
 
 	inputParams.WazuhMessage = wazuhData
+
+	for i, _ := range configParams.PriorityMaps {
+		if slices.Contains(configParams.PriorityMaps[i].ThreatMap, wazuhData.Parameters.Alert.Rule.Level) {
+			inputParams.Color = inputParams.PriorityMaps[i].Color
+			if inputParams.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= inputParams.PriorityMaps[i].MentionThreshold {
+				inputParams.Mention = "@here"
+			}
+			inputParams.Priority = 5 - i
+		}
+	}
 
 	Filter()
 
