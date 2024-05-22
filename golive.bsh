@@ -1,10 +1,8 @@
 #!/bin/bash
 echo "Going live!"
-sudo cp /home/rudi/pycharm/wazuh-notifier.py /var/ossec/active-response/bin
-sudo cp /home/rudi/pycharm/wazuh_notifier_module.py /var/ossec/active-response/bin
+sudo cp /home/rudi/pycharm/wazuh-notify-python/wazuh-notify.py /var/ossec/active-response/bin
+sudo cp /home/rudi/pycharm/wazuh-notify-python/wazuh_notify_module.py /var/ossec/active-response/bin
 sudo cp /home/rudi/pycharm/etc/wazuh-notify-config.yaml /var/ossec/etc
-sudo cp /home/rudi/pycharm/wazuh-test-event.json /var/ossec/etc
-
-echo copied: wazuh-notifier.py, wazuh_notifier_module.py
+sudo cp /home/rudi/pycharm/wazuh-notify-test-event.json /var/ossec/etc
 echo "Live!"
 
