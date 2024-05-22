@@ -1,0 +1,58 @@
+---
+# Start of wazuh notifier configuration yaml.
+
+# This is the yaml config file for wazuh-active-response (for both the Python and Go version)
+
+targets: "discord"                     # Platforms in this string with comma seperated values are triggered.
+full_message: "ntfy, slack"            # Platforms in this string will enable the sending of the full event information.
+
+# Exclude rule events that are enabled in the ossec.conf active response definition.
+# These settings provide an easier way to disable events from firing the notifiers.
+
+excluded_rules: "99999, 00000"        # Enter as a string with comma seperated values
+excluded_agents: "99999"              # Enter as a string with comma seperated values
+
+# Priority mapping from 0-15 (Wazuh threat levels) to 1-5 (in notifications) and their respective colors (Discord)
+# https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html
+# Enter as lists of integers.
+
+
+priority_map:
+  - threat_map: [ 15,14,13,12 ]
+    mention_threshold: 1
+    color: 0xcc3300
+  - threat_map: [ 11,10,9 ]
+    mention_threshold: 1
+    color: 0xff9966
+  - threat_map: [ 8,7,6 ]
+    mention_threshold: 5
+    color: 0xffcc00
+  - threat_map: [ 5,4 ]
+    mention_threshold: 20
+    color: 0x99cc33
+  - threat_map: [ 3,2,1,0 ]
+    mention_threshold: 20
+    color: 0x339900
+
+# The next 2 settings are used to add information to the messages.
+sender: "Wazuh (IDS)"
+click: "https://documentation.wazuh.com/"
+
+# From here on the settings are ONLY used by the Python version of wazuh-active-response.
+
+# Below settings provide for a window that enable/disables events from firing the notifiers.
+excluded_days: ""                   # Enter as a string with comma seperated values. Be aware of your regional settings.
+excluded_hours: [ "23:59", "00:00" ]  # Enter as a tuple of string values. Be aware of your regional settings.
+
+# The next settings are used for testing. Test mode will add the example event in wazuh-notify-test-event.json instead of the
+# message received through wazuh. This enables testing for particular events when the test event is customized.
+test_mode: True
+
+# Enabling this parameter provides more logging to the wazuh-notifier log.
+extended_logging: True
+
+# Enabling this parameter provides extended logging to the console.
+extended_print: True
+
+# End of wazuh notifier configuration yaml
+...
