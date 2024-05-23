@@ -192,7 +192,7 @@ full_message: ""
 
 Exclude_rules and excluded_agents will disable notification for these particular events or agents that are enabled in
 the ossec.conf active response definition.
-These settings provide an easier way to disable events from firing. No need to restart Wazuh-manager.
+These settings provide an easier way to disable event notifications from firing. No need to restart Wazuh-manager.
 
 Enter rule numbers as a string with comma-separated values.
 Enter numeric agent id's as a string with comma-separated values.
@@ -202,12 +202,14 @@ excluded_rules: "99999, 00000"
 excluded_agents: "99999"
 ```
 
-There is a mapping from Wazuh threat levels (0-15) to priorities (1-5) in notifications.
-https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html
+There is a mapping from [Wazuh threat levels](https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html) (0-15) to priorities (1-5) in notifications.
+
 Enter the values for the threat_map as lists of integers, mention_thresholds as integers and colors as Hex integers.
+
 The mention_threshold, relates to the number of times a rule has been fired. When the times fired is equal to or greater
 than the mention_threshold, the recipient will receive a Discord mention in addition to the normal message.
-This is a list notation.
+
+This setting is a list notation.
 
 ```
 priority_map:
