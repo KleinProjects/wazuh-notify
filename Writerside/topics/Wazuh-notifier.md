@@ -7,7 +7,6 @@
 - [Configuration](#configuration)
 - [The YAML configuration](#the-yaml-configuration)
 
-
 ## Introduction
 
 Wazuh notifier enables the Wazuh manager to be notified when selected events occur, using 3 messaging platforms:
@@ -30,20 +29,20 @@ Download the files from https://github.com/kleinprojects/wazuh-notify to your se
 
 #### _Python_ {id="python_1"}
 
-##### Copy the 2 Python scripts to the /var/ossec/active-response/bin/ folder
+Copy the 2 Python scripts to the /var/ossec/active-response/bin/ folder
 
 ``` 
 $ sudo cp <download folder>/wazuh-*.py /var/ossec/active-response/bin/
 ```
 
-##### Set the correct ownership {id="set-the-correct-ownership_1"}
+Set the correct ownership {id="set-the-correct-ownership_1"}
 
 ```
 $ sudo chown root:wazuh /var/ossec/active-response/bin/wazuh-notify.py
 $ sudo chown root:wazuh /var/ossec/active-response/bin/wazuh_notify_module.py
 ```
 
-##### Set the correct permissions {id="set-the-correct-permissions_1"}
+Set the correct permissions {id="set-the-correct-permissions_1"}
 
 ```
 $ sudo chmod uog+rx /var/ossec/active-response/bin/wazuh-notify.py
@@ -52,19 +51,19 @@ $ sudo chmod uog+rx /var/ossec/active-response/bin/wazuh_notify_module.py
 
 #### _Golang_ {id="golang_1"}
 
-##### Copy the Go executable to the /var/ossec/active-response/bin/ folder
+Copy the Go executable to the /var/ossec/active-response/bin/ folder
 
 ``` 
 $ sudo cp <download folder>/wazuh-notify /var/ossec/active-response/bin/
 ```
 
-##### the correct ownership {id="set-the-correct-ownership_2"}
+Set the correct ownership {id="set-the-correct-ownership_2"}
 
 ```
 $ sudo chown root:wazuh /var/ossec/active-response/bin/wazuh-notify
 ```
 
-##### Set the correct permissions {id="set-the-correct-permissions_2"}
+Set the correct permissions {id="set-the-correct-permissions_2"}
 
 ```
 $ sudo chmod uog+rx /var/ossec/active-response/bin/wazuh-notify
@@ -72,19 +71,19 @@ $ sudo chmod uog+rx /var/ossec/active-response/bin/wazuh-notify
 
 ### Step 3
 
-##### Copy the YAML file to /var/ossec/etc/
+Copy the YAML file to /var/ossec/etc/
 
 ```
 $ sudo cp <download folder>/wazuh-notify-config.yaml /var/ossec/etc/
 ```
 
-##### Set the correct ownership {id="set-the-correct-ownership_3"}
+Set the correct ownership {id="set-the-correct-ownership_3"}
 
 ```
 $ sudo chown root:wazuh /var/ossec/etc/wazuh-notify-config.yaml
 ```
 
-##### Set the correct permissions {id="set-the-correct-permissions_3"}
+Set the correct permissions {id="set-the-correct-permissions_3"}
 
 ```
 $ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
@@ -92,19 +91,19 @@ $ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
 
 ### Step 4
 
-##### Create an .env file in /var/ossec/etc/
+Create an .env file in /var/ossec/etc/
 
 ```
 $ sudo touch /var/ossec/etc/.env
 ```
 
-#### Set the correct ownership {id="set-the-correct-ownership_4"}
+Set the correct ownership {id="set-the-correct-ownership_4"}
 
 ```
 $ sudo chown root:wazuh /var/ossec/etc/wazuh-notify-config.yaml
 ```
 
-#### Set the correct permissions {id="set-the-correct-permissions_4"}
+Set the correct permissions {id="set-the-correct-permissions_4"}
 
 ```
 $ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
@@ -112,11 +111,11 @@ $ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
 
 ## Configuration
 
-#### Golang {id="golang_2"}
+#### _Golang_ {id="golang_2"}
 
-Modify the /var/ossec/etc/ossec.conf configuration file and add the following<br/>
+Modify the /var/ossec/etc/ossec.conf configuration file and add the following:<br/>
 
-Command section
+*Command section*
 
 ```
 <command>
@@ -126,7 +125,7 @@ Command section
 </command>
 ```
 
-Active response section
+*Active response section*
 
 ```
 <active-response>
@@ -137,9 +136,9 @@ Active response section
 </active-response>
 ```
 
-#### Python {id="python_2"}
+#### _Python_ {id="python_2"}
 
-Command section
+*Command section*
 
 ```
 <command>
@@ -149,7 +148,7 @@ Command section
 </command>
 ```
 
-Active response section
+*Active response section*
 
 ```
 <active-response>
@@ -160,7 +159,7 @@ Active response section
 </active-response>
 ```
 
-### NOTE: 
+#### NOTE: 
 
 The ```<name>``` in the ```<command>``` section needs to be the same as the ```<command>``` in
 the ```<active-response>``` section.
@@ -170,7 +169,7 @@ trigger that runs the ```<command>```.
 Add the rules you want to be informed about between the ```<rules_id></rules_id>```, with the rules id's separated by
 comma's.
 Example: ```<rules_id>5402, 3461, 8777</rules_id><br/>```
-(Please refer to the Wazuh online documentation for more information [^Wazuh docs])
+(Please refer to the [Wazuh online documentation](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/index.html) for more information [^Wazuh docs])
 
 [^Wazuh docs]: https://documentation.wazuh.com/current/user-manual/capabilities/active-response/index.html
 
