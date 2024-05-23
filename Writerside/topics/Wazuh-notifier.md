@@ -4,13 +4,23 @@
 
 - [Introduction](#introduction)
 - [Installation](#installation)
+    - [Step 1](#step-1-download)
+    - [Step 2](#step-2-copy-files)
+        - [Python](#python_1)
+        - [Golang](#golang_1)
+    - [Step 3](#step-3)
+    - [Step 4](#step-4)
 - [Configuration](#configuration)
+    - [Golang](#golang_2)
+    - [Python](#python_2)
+    - [Note](#note)
 - [The YAML configuration](#the-yaml-configuration)
+- [Setting up the platforms](#setting-up-the-platforms-receiving-the-notifications)
 
 ## Introduction
 
 Wazuh notifier enables the Wazuh manager to be notified when selected events occur, using 3 messaging platforms:
-ntfy.sh, Discord and Slack.  
+[ntfy.sh](https://ntfy.sh), [Discord](https://discord.com) and [Slack](https://slack.com).
 
 There are 2 implementations of Wazuh notify. One written in Golang and the other in Python. Both implementations have
 similar functionality, but the Python version is slightly more configurable.
@@ -159,7 +169,7 @@ Modify the /var/ossec/etc/ossec.conf configuration file and add the following:<b
 </active-response>
 ```
 
-#### NOTE: 
+#### NOTE:
 
 The ```<name>``` in the ```<command>``` section needs to be the same as the ```<command>``` in
 the ```<active-response>``` section.
@@ -169,9 +179,9 @@ trigger that runs the ```<command>```.
 Add the rules you want to be informed about between the ```<rules_id></rules_id>```, with the rules id's separated by
 comma's.
 Example: ```<rules_id>5402, 3461, 8777</rules_id><br/>```
-(Please refer to the [Wazuh online documentation](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/index.html) for more information [^Wazuh docs])
-
-[^Wazuh docs]: https://documentation.wazuh.com/current/user-manual/capabilities/active-response/index.html
+Please refer to
+the [Wazuh online documentation](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/index.html)
+for more information.
 
 ## The YAML configuration
 
@@ -202,7 +212,11 @@ excluded_rules: "99999, 00000"
 excluded_agents: "99999"
 ```
 
-There is a mapping from [Wazuh threat levels](https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html) (0-15) to priorities (1-5) in notifications.
+There is a mapping
+from [Wazuh threat levels](https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html) (0-15)
+to priorities (1-5) in notifications.
+The colors are derived from
+the [Homeland Security Advisory System](https://en.wikipedia.org/wiki/Homeland_Security_Advisory_System).
 
 Enter the values for the threat_map as lists of integers, mention_thresholds as integers and colors as Hex integers.
 
@@ -213,26 +227,26 @@ This setting is a list notation.
 
 ```
 priority_map:
-- threat_map: [ 15,14,13,12 ]
-mention_threshold: 1
-color: 0xcc3300
-- threat_map: [ 11,10,9 ]
-mention_threshold: 1
-color: 0xff9966
-- threat_map: [ 8,7,6 ]
-mention_threshold: 5
-color: 0xffcc00
-- threat_map: [ 5,4 ]
-mention_threshold: 20
-color: 0x99cc33
-- threat_map: [ 3,2,1,0 ]
-mention_threshold: 20
-color: 0x339900
+  - threat_map: [ 15,14,13,12 ]
+    mention_threshold: 1
+    color: 0xec3e40 # Red, SEVERE
+  - threat_map: [ 11,10,9 ]
+    mention_threshold: 1
+    color: 0xff9b2b # Orange, HIGH
+  - threat_map: [ 8,7,6 ]
+    mention_threshold: 5
+    color: 0xf5d800 # Yellow, ELEVATED
+  - threat_map: [ 5,4 ]
+    mention_threshold: 20
+    color: 0x377fc7 # Blue, GUARDED
+  - threat_map: [ 3,2,1,0 ]
+    mention_threshold: 20
+    color: 0x01a465 # Green, LOW
 ```
 
 The next 2 settings are used to add information to the messages.
 Sender translate to the ``` username ``` field in Discord and to the ```title``` field in ntfy.sh. It is not used for
-Slack. 
+Slack.
 Click adds an arbitrary URL to the message.
 
 ```
@@ -290,3 +304,16 @@ Enabling this parameter provides extended logging to the console (see extended l
 ```
 extended_print: 0
 ```
+
+## Setting up the platforms receiving the notifications
+
+Each of the 3 platforms make use of webhooks or similar API's. In order to have the right information in the ```.env```
+file, please refer to the platform's documentation.
+
+[Slack](https://api.slack.com/) API documentation
+
+[ntfy.sh](https://docs.ntfy.sh/subscribe/api/) API documentation
+
+[ntfy.sh](https://docs.ntfy.sh/examples/) examples
+
+[Discord](https://discord.com/developers/docs/intro) developers documentation
