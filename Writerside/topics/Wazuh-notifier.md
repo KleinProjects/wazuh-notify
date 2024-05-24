@@ -1,178 +1,279 @@
 # Wazuh notify
 
-Wazuh notifier enables the Wazuh manager to be notified when selected events occur, using 3 messaging platforms: ntfy.sh, Discord and Slack.
+## Table of Contents
 
-## Contents
+- [Introduction](#introduction)
+- [Installation](#installation)
+    - [Step 1](#step-1-download)
+    - [Step 2](#step-2-copy-files)
+        - [Python](#python_1)
+        - [Golang](#golang_1)
+    - [Step 3](#step-3)
+    - [Step 4](#step-4)
+- [Configuration](#configuration)
+    - [Golang](#golang_2)
+    - [Python](#python_2)
+    - [Note](#note)
+- [The YAML configuration](#the-yaml-configuration)
+- [Setting up the platforms](#setting-up-the-platforms-receiving-the-notifications)
 
-There are 2 implementations of Wazuh notify. One written in Golang and the other in Python. Both implementations have similar functionality, but the Python version is slightly more configurable.
+## Introduction
 
-Wazuh notify is a stateless implementation and only notifies, triggered by selected rules.
+Wazuh notifier enables the Wazuh manager to be notified when selected events occur, using 3 messaging platforms:
+[ntfy.sh](https://ntfy.sh), [Discord](https://discord.com) and [Slack](https://slack.com).
+
+There are 2 implementations of Wazuh notify. One written in Golang and the other in Python. Both implementations have
+similar functionality, but the Python version is slightly more configurable.
+
+Wazuh notify is a stateless implementation and only notifies, triggered by selected rules, agents, or threat levels.
 
 Wazuh notify is triggered by configuring the **ossec.conf** and adding an **active response configuration.**
 
-## Installation ##
+## Installation
 
-### Step 1 ###
+### Step 1: download
 
 Download the files from https://github.com/kleinprojects/wazuh-notify to your server.
 
-### Step 2 ###
+### Step 2: copy files
 
-#### Python ####
+#### _Python_ {id="python_1"}
+
 Copy the 2 Python scripts to the /var/ossec/active-response/bin/ folder
+
 ``` 
-$ cp <download folder>/wazuh-*.py /var/ossec/active-response/bin/
+$ sudo cp <download folder>/wazuh-*.py /var/ossec/active-response/bin/
 ```
-Set the correct ownership
+
+Set the correct ownership {id="set-the-correct-ownership_1"}
+
 ```
-$ chown root:wazuh /var/ossec/active-response/bin/wazuh-notify.py
-$ chown root:wazuh /var/ossec/active-response/bin/wazuh_notify_module.py
+$ sudo chown root:wazuh /var/ossec/active-response/bin/wazuh-notify.py
+$ sudo chown root:wazuh /var/ossec/active-response/bin/wazuh_notify_module.py
 ```
-Set the correct permissions
+
+Set the correct permissions {id="set-the-correct-permissions_1"}
+
 ```
-$ chmod uog+rx /var/ossec/active-response/bin/wazuh-notify.py
-$ chmod uog+rx /var/ossec/active-response/bin/wazuh_notify_module.py
+$ sudo chmod uog+rx /var/ossec/active-response/bin/wazuh-notify.py
+$ sudo chmod uog+rx /var/ossec/active-response/bin/wazuh_notify_module.py
 ```
-#### Golang ####
+
+#### _Golang_ {id="golang_1"}
 
 Copy the Go executable to the /var/ossec/active-response/bin/ folder
+
 ``` 
-$ cp <download folder>/wazuh-notify /var/ossec/active-response/bin/
-```
-Set the correct ownership
-```
-$ chown root:wazuh /var/ossec/active-response/bin/wazuh-notify
-```
-Set the correct permissions
-```
-$ chmod uog+rx /var/ossec/active-response/bin/wazuh-notify
+$ sudo cp <download folder>/wazuh-notify /var/ossec/active-response/bin/
 ```
 
-### Step 3 ###
+Set the correct ownership {id="set-the-correct-ownership_2"}
+
+```
+$ sudo chown root:wazuh /var/ossec/active-response/bin/wazuh-notify
+```
+
+Set the correct permissions {id="set-the-correct-permissions_2"}
+
+```
+$ sudo chmod uog+rx /var/ossec/active-response/bin/wazuh-notify
+```
+
+### Step 3
+
 Copy the YAML file to /var/ossec/etc/
-```
-$ cp <download folder>/wazuh-notify-config.yaml /var/ossec/etc/
-```
-
-Set the correct ownership
-```
-$ chown root:wazuh /var/ossec/etc/wazuh-notify-config.yaml
-```
-
-Set the correct permissions
-```
-$ chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
-```
-
-### Step 4 ###
-
-#### for Golang ####
-
-Modify the /var/ossec/etc/ossec.conf configuration file and add the following<br/>
-```
-  <command>
-    <name>wazuh-notify-go</name>
-    <executable>wazuh-notify</executable>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>
-```
 
 ```
-  <active-response>
-    <command>wazuh-notify-go</command>
-    <location>server</location>
-    <level></level>
-    <rules_id></rules_id>
-  </active-response>
-```
-#### for Python ####
-```
-  <command>
-    <name>wazuh-notify-py</name>
-    <executable>wazuh-notify.py</executable>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>
+$ sudo cp <download folder>/wazuh-notify-config.yaml /var/ossec/etc/
 ```
 
-```
-  <active-response>
-    <command>wazuh-notify-py</command>
-    <location>server</location>
-    <level></level>
-    <rules_id></rules_id>
-  </active-response>
-```
-NOTE: The ```<name>``` in the ```<command>``` section needs to be the same as the ```<command>``` in the ```<active-response>``` section.
-The ```<command>``` section describes the program that is executed. The ```<active-response>``` section describes the trigger that runs the ```<command>```.
+Set the correct ownership {id="set-the-correct-ownership_3"}
 
-Add the rules you want to be informed about between the ```<rules_id></rules_id>```, with the rules id's separated by comma's.
+```
+$ sudo chown root:wazuh /var/ossec/etc/wazuh-notify-config.yaml
+```
+
+Set the correct permissions {id="set-the-correct-permissions_3"}
+
+```
+$ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
+```
+
+### Step 4
+
+Create an .env file in /var/ossec/etc/
+
+```
+$ sudo touch /var/ossec/etc/.env
+```
+
+Set the correct ownership {id="set-the-correct-ownership_4"}
+
+```
+$ sudo chown root:wazuh /var/ossec/etc/wazuh-notify-config.yaml
+```
+
+Set the correct permissions {id="set-the-correct-permissions_4"}
+
+```
+$ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
+```
+
+## Configuration
+
+#### _Golang_ {id="golang_2"}
+
+Modify the /var/ossec/etc/ossec.conf configuration file and add the following:<br/>
+
+*Command section*
+
+```
+<command>
+<name>wazuh-notify-go</name>
+<executable>wazuh-notify</executable>
+<timeout_allowed>yes</timeout_allowed>
+</command>
+```
+
+*Active response section*
+
+```
+<active-response>
+<command>wazuh-notify-go</command>
+<location>server</location>
+<level></level>
+<rules_id></rules_id>
+</active-response>
+```
+
+#### _Python_ {id="python_2"}
+
+*Command section*
+
+```
+<command>
+<name>wazuh-notify-py</name>
+<executable>wazuh-notify.py</executable>
+<timeout_allowed>yes</timeout_allowed>
+</command>
+```
+
+*Active response section*
+
+```
+<active-response>
+<command>wazuh-notify-py</command>
+<location>server</location>
+<level></level>
+<rules_id></rules_id>
+</active-response>
+```
+
+#### NOTE:
+
+The ```<name>``` in the ```<command>``` section needs to be the same as the ```<command>``` in
+the ```<active-response>``` section.
+The ```<command>``` section describes the program that is executed. The ```<active-response>``` section describes the
+trigger that runs the ```<command>```.
+
+Add the rules you want to be informed about between the ```<rules_id></rules_id>```, with the rules id's separated by
+comma's.
 Example: ```<rules_id>5402, 3461, 8777</rules_id><br/>```
-(Please refer to the Wazuh online documentation for more information [^Wazuh docs])
+Please refer to
+the [Wazuh online documentation](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/index.html)
+for more information.
 
-[^Wazuh docs]: https://documentation.wazuh.com/current/user-manual/capabilities/active-response/index.html
-
-
-## The YAML configuration ##
+## The YAML configuration
 
 This is the yaml config file for wazuh-active-response (for both the Python and Go version)
 
-Platforms in this string with comma separated values are triggered.
+The targets setting defines the platforms where notifications will be sent to.
+Platforms in this comma-separated string will receive notifications.
+
 ```
-targets: "slack, ntfy, discord"  
+targets: "slack, ntfy, discord"
 ```
-Platforms in this string will enable the sending of the full event information. 
+
+Platforms in this comma-separated string will receive the full event information.
+
 ```
-full_message: ""                 
+full_message: "" 
 ```
-Exclude rule events that are enabled in the ossec.conf active response definition.
-These settings provide an easier way to disable events from firing. No need to restart Wazuh-manager.
+
+Exclude_rules and excluded_agents will disable notification for these particular events or agents that are enabled in
+the ossec.conf active response definition.
+These settings provide an easier way to disable event notifications from firing. No need to restart Wazuh-manager.
+
+Enter rule numbers as a string with comma-separated values.
+Enter numeric agent id's as a string with comma-separated values.
+
 ```
-excluded_rules: "99999, 00000"        # Rule numbers. Enter as a string with comma separated values
-excluded_agents: "99999"              # Numeric agent id. Enter as a string with comma separated values
+excluded_rules: "99999, 00000"
+excluded_agents: "99999"
 ```
-Priority mapping from 0-15 (Wazuh threat levels) to 1-5 (in notifications).  
-https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html 
-Enter the values for the threat_map as lists of integers, mention_thresholds as integers and colors as Hex integers
-The mention_threshold, combined with the number of times a rule is fired, will force a mention to the recipient.
-This is a list notation.
+
+There is a mapping
+from [Wazuh threat levels](https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html) (0-15)
+to priorities (1-5) in notifications.
+The colors are derived from
+the [Homeland Security Advisory System](https://en.wikipedia.org/wiki/Homeland_Security_Advisory_System).
+
+Enter the values for the threat_map as lists of integers, mention_thresholds as integers and colors as Hex integers.
+
+The mention_threshold, relates to the number of times a rule has been fired. When the times fired is equal to or greater
+than the mention_threshold, the recipient will receive a Discord mention in addition to the normal message.
+
+This setting is a list notation.
+
 ```
 priority_map:
-- threat_map: [ 15,14,13,12 ]
-  mention_threshold: 1
-  color: 0xcc3300
-- threat_map: [ 11,10,9 ]
-  mention_threshold: 1
-  color: 0xff9966
-- threat_map: [ 8,7,6 ]
-  mention_threshold: 5
-  color: 0xffcc00
-- threat_map: [ 5,4 ]
-  mention_threshold: 20
-  color: 0x99cc33
-- threat_map: [ 3,2,1,0 ]
-  mention_threshold: 20
-  color: 0x339900
+  - threat_map: [ 15,14,13,12 ]
+    mention_threshold: 1
+    color: 0xec3e40 # Red, SEVERE
+  - threat_map: [ 11,10,9 ]
+    mention_threshold: 1
+    color: 0xff9b2b # Orange, HIGH
+  - threat_map: [ 8,7,6 ]
+    mention_threshold: 5
+    color: 0xf5d800 # Yellow, ELEVATED
+  - threat_map: [ 5,4 ]
+    mention_threshold: 20
+    color: 0x377fc7 # Blue, GUARDED
+  - threat_map: [ 3,2,1,0 ]
+    mention_threshold: 20
+    color: 0x01a465 # Green, LOW
 ```
+
 The next 2 settings are used to add information to the messages.
+Sender translate to the ``` username ``` field in Discord and to the ```title``` field in ntfy.sh. It is not used for
+Slack.
+Click adds an arbitrary URL to the message.
+
 ```
 sender: "Wazuh (IDS)"
 click: "https://documentation.wazuh.com/"
 ```
-### From here on the settings are ONLY used by the Python version of wazuh-notify. ###
+
+### From here on the settings are ONLY used by the Python version of wazuh-notify.
 
 Below settings provide for a window that enable/disables events from firing the notifiers.
 
 Enter ```excluded_days``` as a string with comma separated values. Be aware of your regional settings.
+
 ```
 excluded_days: "" 
 ```
+
 Enter ```excluded_hours``` as a tuple of string values. Be aware of your regional settings.
+
 ```
-excluded_hours: [ "23:59", "00:00" ]  
+excluded_hours: [ "23:59", "00:00" ]
 ```
 
-The following parameters define the markdown characters used to emphasise the parameter names in the notification messages (Markdown style)
+The following parameters define the markdown characters used to emphasise the parameter names in the notification
+messages (Markdown style)
 This is a dictionary (object) notation.
+
 ```
 markdown_emphasis:
 slack: "*"
@@ -180,20 +281,39 @@ ntfy: "**"
 discord: "**"
 ```
 
-The next settings are used for testing. 
-Test mode will add an example event contained in wazuh-notify-test-event.json instead of the message received through Wazuh. 
-Changing this value to ```True``` enables testing for particular events when the test event is customized.
+The next settings are used for testing purposes.
+
+Test mode will add an example event (wazuh-notify-test-event.json) instead of the message received through Wazuh.
+This enables testing for particular events when the test event is customized.
+
 ```
 test_mode: False
 ```
-Setting this parameter provides more logging to the wazuh-notifier log. Possible values are 
-0 (almost no logging), 
-1 (basic logging) and 
+
+Setting this parameter provides more logging to the wazuh-notifier log. Possible values are
+0 (almost no logging),
+1 (basic logging) and
 2 (verbose logging)
+
 ```
 extended_logging: 2
 ```
+
 Enabling this parameter provides extended logging to the console (see extended logging).
+
 ```
 extended_print: 0
 ```
+
+## Setting up the platforms receiving the notifications
+
+Each of the 3 platforms make use of webhooks or similar API's. In order to have the right information in the ```.env```
+file, please refer to the platform's documentation.
+
+[Slack](https://api.slack.com/) API documentation
+
+[ntfy.sh](https://docs.ntfy.sh/subscribe/api/) API documentation
+
+[ntfy.sh](https://docs.ntfy.sh/examples/) examples
+
+[Discord](https://discord.com/developers/docs/intro) developers documentation

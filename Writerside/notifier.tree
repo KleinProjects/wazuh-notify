@@ -7,5 +7,4 @@
                  start-page="Wazuh-notifier.md">
 
     <toc-element topic="Wazuh-notifier.md"/>
-    <toc-element topic="Tutorial.md"/>
 </instance-profile>
