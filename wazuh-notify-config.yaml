@@ -4,7 +4,8 @@
 # This is the yaml config file for wazuh-active-response (for both the Python and Go version)
 
 targets: "slack, ntfy, discord"  # Platforms in this string with comma seperated values are triggered.
-full_message: ""                # Platforms in this string will enable the sending of the full event information.
+full_message: ""                 # Platforms in this string will enable sending the full event information.
+full_alert: ""                   # Platforms in this string will enable sending the full event information.
 
 # Exclude rule events that are enabled in the ossec.conf active response definition.
 # These settings provide an easier way to disable events from firing the notifiers.
@@ -19,19 +20,19 @@ excluded_agents: "99999"              # Enter as a string with comma seperated v
 priority_map:
   - threat_map: [ 15,14,13,12 ]
     mention_threshold: 1
-    color: 0xcc3300
+    color: 0xec3e40 # Red, SEVERE
   - threat_map: [ 11,10,9 ]
     mention_threshold: 1
-    color: 0xff9966
+    color: 0xff9b2b # Orange, HIGH
   - threat_map: [ 8,7,6 ]
     mention_threshold: 5
-    color: 0xffcc00
+    color: 0xf5d800 # Yellow, ELEVATED
   - threat_map: [ 5,4 ]
     mention_threshold: 20
-    color: 0x99cc33
+    color: 0x377fc7 # Blue, GUARDED
   - threat_map: [ 3,2,1,0 ]
     mention_threshold: 20
-    color: 0x339900
+    color: 0x01a465 # Green, LOW
 
 # The next 2 settings are used to add information to the messages.
 sender: "Wazuh (IDS)"
