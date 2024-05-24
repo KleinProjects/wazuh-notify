@@ -60,7 +60,7 @@ func InitNotify() types.Params {
 	log.Log(string(inputParamString))
 
 	inputParams.Targets = configParams.Targets
-	inputParams.FullMessage = configParams.FullMessage
+	inputParams.FullAlert = configParams.FullAlert
 	inputParams.ExcludedAgents = configParams.ExcludedAgents
 	inputParams.ExcludedRules = configParams.ExcludedRules
 	inputParams.PriorityMaps = configParams.PriorityMaps

@@ -17,16 +17,16 @@ func SendDiscord(params types.Params) {
 	var embedDescription string
 
 	if slices.Contains(strings.Split(params.FullMessage, ","), "discord") {
-		fullMessage, _ := json.MarshalIndent(params.WazuhMessage, "", "  ")
-		fullMessageString := strings.ReplaceAll(string(fullMessage), `"`, "")
-		fullMessageString = strings.ReplaceAll(fullMessageString, "{", "")
-		fullMessageString = strings.ReplaceAll(fullMessageString, "}", "")
-		fullMessageString = strings.ReplaceAll(fullMessageString, "[", "")
-		fullMessageString = strings.ReplaceAll(fullMessageString, "]", "")
-		fullMessageString = strings.ReplaceAll(fullMessageString, " ,", "")
+		fullAlert, _ := json.MarshalIndent(params.WazuhMessage, "", "  ")
+		fullAlertString := strings.ReplaceAll(string(fullAlert), `"`, "")
+		fullAlertString = strings.ReplaceAll(fullAlertString, "{", "")
+		fullAlertString = strings.ReplaceAll(fullAlertString, "}", "")
+		fullAlertString = strings.ReplaceAll(fullAlertString, "[", "")
+		fullAlertString = strings.ReplaceAll(fullAlertString, "]", "")
+		fullAlertString = strings.ReplaceAll(fullAlertString, " ,", "")
 
 		embedDescription = "\n\n ```" +
-			fullMessageString +
+			fullAlertString +
 			"```\n\n" +
 			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
 			"Tags: " + params.Tags + "\n\n" +
