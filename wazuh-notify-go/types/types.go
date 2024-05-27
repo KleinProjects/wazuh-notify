@@ -23,6 +23,7 @@ type General struct {
 type PriorityMap struct {
 	ThreatMap        []int `toml:"threat_map"`
 	MentionThreshold int   `toml:"mention_threshold"`
+	NotifyThreshold  int   `toml:"notify_threshold"`
 	Color            int   `toml:"color"`
 }
 type MarkdownEmphasis struct {

@@ -81,6 +81,9 @@ func wazuhInput() {
 
 	for i, _ := range configParams.PriorityMap {
 		if slices.Contains(configParams.PriorityMap[i].ThreatMap, wazuhData.Parameters.Alert.Rule.Level) {
+			if inputParams.WazuhMessage.Parameters.Alert.Rule.Firedtimes%inputParams.PriorityMap[i].NotifyThreshold != 0 {
+				os.Exit(0)
+			}
 			inputParams.Color = inputParams.PriorityMap[i].Color
 			if inputParams.WazuhMessage.Parameters.Alert.Rule.Firedtimes >= inputParams.PriorityMap[i].MentionThreshold {
 				inputParams.Mention = "@here"
