@@ -16,7 +16,7 @@ func SendDiscord(params types.Params) {
 
 	var embedDescription string
 
-	if slices.Contains(strings.Split(params.FullMessage, ","), "discord") {
+	if slices.Contains(strings.Split(params.FullAlert, ","), "discord") {
 		fullAlert, _ := json.MarshalIndent(params.WazuhMessage, "", "  ")
 		fullAlertString := strings.ReplaceAll(string(fullAlert), `"`, "")
 		fullAlertString = strings.ReplaceAll(fullAlertString, "{", "")

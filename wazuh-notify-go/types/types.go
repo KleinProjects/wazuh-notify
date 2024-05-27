@@ -7,7 +7,7 @@ type Params struct {
 	Tags           string
 	Click          string `yaml:"click,omitempty"`
 	Targets        string `yaml:"targets,omitempty"`
-	FullMessage    string `yaml:"full_message,omitempty"`
+	FullAlert      string `yaml:"full_message,omitempty"`
 	ExcludedRules  string `yaml:"excluded_rules,omitempty"`
 	ExcludedAgents string `yaml:"excluded_agents,omitempty"`
 	Color          int
