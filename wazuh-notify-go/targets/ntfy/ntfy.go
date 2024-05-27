@@ -10,14 +10,14 @@ import (
 )
 
 func SendNtfy(params types.Params) {
-
+	//Create request and build message
 	req, _ := http.NewRequest(
 		"POST",
 		os.Getenv("NTFY_URL"),
 		strings.NewReader("&nbsp;"+services.BuildMessage(params, "ntfy", params.MarkdownEmphasis.Ntfy)))
 
 	req.Header.Set("Content-Type", "text/markdown")
-
+	//Set headers if not empty
 	if params.General.Sender != "" {
 		req.Header.Add("Title", params.General.Sender)
 	}
@@ -30,6 +30,6 @@ func SendNtfy(params types.Params) {
 	if params.Priority != 0 {
 		req.Header.Add("Priority", strconv.Itoa(params.Priority))
 	}
-
+	//Send request
 	http.DefaultClient.Do(req)
 }

@@ -12,12 +12,12 @@ import (
 func ReadConfig() types.Params {
 
 	var configParams types.Params
-
+	//Get Path of executable location
 	baseFilePath, _ := os.Executable()
 	baseDirPath := path.Dir(baseFilePath)
-
+	//Open log file and set first message
 	log.OpenLogFile(baseDirPath)
-
+	//Load .env into environment variables
 	err := godotenv.Load(path.Join(baseDirPath, "../../etc/.env"))
 	if err != nil {
 		log.Log("env failed to load")
@@ -25,7 +25,7 @@ func ReadConfig() types.Params {
 	} else {
 		log.Log("env loaded")
 	}
-
+	//Read config file
 	tomlFile, err := os.ReadFile(path.Join(baseDirPath, "../../etc/wazuh-notify-config.toml"))
 	if err != nil {
 		log.Log("toml failed to load")
