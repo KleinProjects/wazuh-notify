@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 	"wazuh-notify/types"
 )
 
@@ -33,6 +34,7 @@ func SendDiscord(params types.Params) {
 			params.Click
 	} else {
 		embedDescription = "\n\n" +
+			"**Timestamp: **" + time.Now().Format(time.DateTime) + "\n" +
 			"**Agent:** " + params.WazuhMessage.Parameters.Alert.Agent.Name + "\n" +
 			"**Event id:** " + params.WazuhMessage.Parameters.Alert.Rule.ID + "\n" +
 			"**Rule:** " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
