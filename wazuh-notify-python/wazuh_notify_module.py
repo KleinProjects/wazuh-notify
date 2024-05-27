@@ -8,7 +8,7 @@ import time
 from os.path import join, dirname
 from sys import _getframe as frame
 
-import yaml
+import tomli
 from dotenv import load_dotenv
 
 
@@ -17,10 +17,10 @@ from dotenv import load_dotenv
 #               config_path = wazuh-notify-config.yaml
 
 def set_environment() -> tuple:
-
-    set_wazuh_path = os.path.abspath(os.path.join(__file__, "../../.."))
+    set_wazuh_path = os.path.abspath(os.path.join(__file__, "../.."))
+    # set_wazuh_path = os.path.abspath(os.path.join(__file__, "../../.."))
     set_log_path = '{0}/logs/wazuh-notify.log'.format(set_wazuh_path)
-    set_config_path = '{0}/etc/wazuh-notify-config.yaml'.format(set_wazuh_path)
+    set_config_path = '{0}/etc/wazuh-notify-config.toml'.format(set_wazuh_path)
 
     return set_wazuh_path, set_log_path, set_config_path
 
@@ -58,13 +58,13 @@ def logger(level, config, me, him, message):
 
     # Compare the extended_print log level in the configuration to the log level of the message.
 
-    if config.get('extended_print') >= level:
+    if config.get('python').get('extended_print', 0) >= level:
         print(log_line)
 
     try:
         # Compare the extended_logging level in the configuration to the log level of the message.
 
-        if config.get("extended_logging") >= level:
+        if config.get('python').get('extended_logging', 0) >= level:
             with open(logger_log_path, mode="a") as log_file:
                 log_file.write(log_line + "\n")
 
@@ -129,28 +129,28 @@ def get_config():
     try:
         _, _, this_config_path = set_environment()
 
-        with open(this_config_path, 'r') as ntfier_config:
-            config: dict = yaml.safe_load(ntfier_config)
+        with open(this_config_path, 'rb') as ntfier_config:
+            config: dict = tomli.load(ntfier_config)
 
     except (FileNotFoundError, PermissionError, OSError):
         logger(2, config, me, him, "Error accessing configuration file: " + this_config_path)
 
     logger(2, config, me, him, "Reading configuration file: " + this_config_path)
 
-    config['targets'] = config.get('targets', 'discord, ntfy, slack')
-    config['full_alert'] = config.get('full_alert', '')
-    config['excluded_rules'] = config.get('excluded_rules', '')
-    config['excluded_agents'] = config.get('excluded_agents', '')
+    config['targets'] = config.get('general').get('targets', 'discord, slack, ntfy')
+    config['full_alert'] = config.get('general').get('full_alert', False)
+    config['excluded_rules'] = config.get('general').get('excluded_rules', '')
+    config['excluded_agents'] = config.get('general').get('excluded_agents', '')
     config['priority_map'] = config.get('priority_map', [])
-    config['sender'] = config.get('sender', 'Wazuh (IDS)')
-    config['click'] = config.get('click', 'https://wazuh.org')
-    config['md_e'] = config.get('markdown_emphasis', '')
+    config['sender'] = config.get('general').get('sender', 'Wazuh (IDS)')
+    config['click'] = config.get('general').get('click', 'https://wazuh.com')
+    config['md_e'] = config.get('general').get('markdown_emphasis', '')
 
-    config['excluded_days'] = config.get('excluded_days', '')
-    config['excluded_hours'] = config.get('excluded_hours', '')
-    config['test_mode'] = config.get('test_mode', False)
-    config['extended_logging'] = config.get('extended_logging', True)
-    config['extended_print'] = config.get('extended_print', True)
+    config['excluded_days'] = config.get('python').get('excluded_days', '')
+    config['excluded_hours'] = config.get('python').get('excluded_hours', '')
+    config['test_mode'] = config.get('python').get('test_mode', False)
+    config['extended_logging'] = config.get('python').get('extended_logging', 0)
+    config['extended_print'] = config.get('python').get('extended_print', 0)
 
     return config
 
@@ -348,17 +348,17 @@ def exclusions_check(config, alert):
 
     # Check the exclusion records from the configuration yaml.
 
-    ex_hours: tuple = config.get('excluded_hours')
+    ex_hours: tuple = config.get('python', 'excluded_hours')
 
     # Start hour may not be later than end hours. End hour may not exceed 00:00 midnight to avoid day jump.
-
+    ################################################
     ex_hours = [ex_hours[0], "23:59"] if (ex_hours[1] >= '23:59' or ex_hours[1] < ex_hours[0]) else ex_hours
 
     # Get some more exclusion records from the config.
 
-    ex_days = config.get('excluded_days')
-    ex_agents = config.get("excluded_agents")
-    ex_rules = config.get("excluded_rules")
+    ex_days = config.get('python').get('excluded_days')
+    ex_agents = config.get('general').get("excluded_agents")
+    ex_rules = config.get('general').get("excluded_rules")
 
     # Check agent and rule from within the event.
 
@@ -459,7 +459,7 @@ def construct_basic_message(config, arguments, caller: str, data: dict) -> str:
 
     # Include a specific control sequence for markdown bold parameter names.
 
-    md_map = config.get('markdown_emphasis')
+    md_map = config.get('python').get('markdown_emphasis', '')
     md_e = md_map[caller]
 
     # If the --message (-m) argument was fulfilled, use this message to be sent.
@@ -500,11 +500,11 @@ def build_notification(caller, config, arguments, notification, alert, priority,
 
     logger(2, config, me, him, caller + " notification being constructed.")
 
-    md_map = config.get('markdown_emphasis')
+    md_map = config.get('python').get('markdown_emphasis', '')
     md_e = md_map[caller]
 
-    click: str = config.get('click')
-    sender: str = config.get('sender')
+    click: str = config.get('general').get('click', 'https://wazuh.com')
+    sender: str = config.get('general').get('sender', 'Wazuh (IDS)')
     priority: str = str(priority)
     tags = (str(alert['rule']['groups']).replace("[", "")
             .replace("]", "")
