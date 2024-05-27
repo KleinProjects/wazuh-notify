@@ -2,7 +2,7 @@ package services
 
 import (
 	"flag"
-	"wazuh-notify/log"
+	"wazuh-notify/services/log"
 	"wazuh-notify/types"
 )
 

@@ -3,7 +3,7 @@ package services
 import (
 	"os"
 	"strings"
-	"wazuh-notify/log"
+	"wazuh-notify/services/log"
 	"wazuh-notify/types"
 )
 

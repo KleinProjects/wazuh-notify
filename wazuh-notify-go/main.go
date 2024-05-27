@@ -2,11 +2,11 @@ package main
 
 import (
 	"strings"
-	"wazuh-notify/discord"
-	"wazuh-notify/log"
-	"wazuh-notify/ntfy"
 	"wazuh-notify/services"
-	"wazuh-notify/slack"
+	"wazuh-notify/services/log"
+	"wazuh-notify/targets/discord"
+	"wazuh-notify/targets/ntfy"
+	"wazuh-notify/targets/slack"
 )
 
 func main() {

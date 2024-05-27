@@ -5,7 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"os"
 	"path"
-	"wazuh-notify/log"
+	"wazuh-notify/services/log"
 	"wazuh-notify/types"
 )
 

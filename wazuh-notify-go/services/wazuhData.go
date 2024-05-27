@@ -6,7 +6,7 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"wazuh-notify/log"
+	"wazuh-notify/services/log"
 	"wazuh-notify/types"
 )
 
