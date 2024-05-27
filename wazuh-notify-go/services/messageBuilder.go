@@ -33,7 +33,8 @@ func BuildMessage(params types.Params, target string, emphasis string) string {
 			fmt.Sprintf("%sDescription:%s ", emphasis, emphasis) + params.WazuhMessage.Parameters.Alert.FullLog + "\n" +
 			fmt.Sprintf("%sThreat level:%s ", emphasis, emphasis) + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
 			fmt.Sprintf("%sTimes fired:%s ", emphasis, emphasis) + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) +
-			"\n\n"
+			"\n\n" +
+			fmt.Sprintf("%sPriority:%s ", emphasis, emphasis) + strconv.Itoa(params.Priority) + "\n"
 
 	}
 }

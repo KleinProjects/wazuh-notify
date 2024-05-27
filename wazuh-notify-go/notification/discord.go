@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"wazuh-notify/services"
 	"wazuh-notify/types"
 )
@@ -14,7 +13,6 @@ import (
 func SendDiscord(params types.Params) {
 
 	embedDescription := services.BuildMessage(params, "discord", params.MarkdownEmphasis.Discord) +
-		"**Priority:** " + strconv.Itoa(params.Priority) + "\n" +
 		"**Tags:** " + params.Tags + "\n\n" +
 		params.General.Click
 

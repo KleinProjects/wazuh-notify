@@ -31,22 +31,3 @@ type MarkdownEmphasis struct {
 	Ntfy    string `toml:"ntfy"`
 	Discord string `toml:"discord"`
 }
-
-// Discord
-type DiscordMessage struct {
-	Username  string  `json:"username,omitempty"`
-	AvatarUrl string  `json:"avatar_url,omitempty"`
-	Content   string  `json:"content,omitempty"`
-	Embeds    []Embed `json:"embeds,omitempty"`
-}
-
-type Embed struct {
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Color       int    `json:"color,omitempty"`
-}
-
-// slack
-type SlackMessage struct {
-	Text string `json:"text,omitempty"`
-}

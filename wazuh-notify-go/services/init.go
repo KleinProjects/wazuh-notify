@@ -80,7 +80,7 @@ func wazuhInput() {
 
 	inputParams.WazuhMessage = wazuhData
 
-	for i, _ := range configParams.PriorityMap {
+	for i := range configParams.PriorityMap {
 		if slices.Contains(configParams.PriorityMap[i].ThreatMap, wazuhData.Parameters.Alert.Rule.Level) {
 			if inputParams.WazuhMessage.Parameters.Alert.Rule.Firedtimes%inputParams.PriorityMap[i].NotifyThreshold != 0 {
 				os.Exit(0)

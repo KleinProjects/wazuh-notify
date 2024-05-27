@@ -14,7 +14,7 @@ func SendNtfy(params types.Params) {
 	req, _ := http.NewRequest(
 		"POST",
 		os.Getenv("NTFY_URL"),
-		strings.NewReader(services.BuildMessage(params, "ntfy", params.MarkdownEmphasis.Ntfy)))
+		strings.NewReader("&nbsp;"+services.BuildMessage(params, "ntfy", params.MarkdownEmphasis.Ntfy)))
 
 	req.Header.Set("Content-Type", "text/markdown")
 
