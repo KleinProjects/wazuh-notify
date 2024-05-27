@@ -18,7 +18,10 @@ func main() {
 		case "ntfy":
 			log.Log(target)
 			notification.SendNtfy(inputParams)
+		case "slack":
+			log.Log(target)
+			notification.SendSlack(inputParams)
 		}
 	}
-    log.CloseLogFile()
+	log.CloseLogFile()
 }
