@@ -10,10 +10,11 @@ import (
 )
 
 func main() {
+	//Read config file and .env
 	configParams := services.ReadConfig()
-
+	//Parse command line flags
 	inputParams := services.ParseFlags(configParams)
-
+	//Parse wazuh input data from stdin
 	Params := services.ParseWazuhInput(inputParams)
 
 	for _, target := range strings.Split(Params.General.Targets, ", ") {
