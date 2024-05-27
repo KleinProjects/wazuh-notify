@@ -29,7 +29,7 @@ def main():
     arguments = get_arguments()
 
     # Check if we are in test mode (test_mode setting in config yaml). If so, load test event instead of live event.
-    if config.get("test_mode"):
+    if config.get('python', 'test_mode'):
 
         logger(1, config, me, him, "Running in test mode: using test message wazuh-notify-test-event.json")
 

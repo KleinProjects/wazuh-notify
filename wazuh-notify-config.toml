@@ -1,0 +1,79 @@
+#############################################################################################################
+# This is the TOML config file for wazuh-notify (active response) for both the Python and Go implementation #
+#############################################################################################################
+
+[general]
+# Platforms in this string with comma seperated values are triggered.
+targets = "slack, ntfy, discord"
+
+# Platforms in this string will enable sending the full event information.
+full_alert = ""
+
+# Exclude rule events that are enabled in the ossec.conf active response definition.
+# These settings provide an easier way to disable events from firing the notifiers.
+excluded_rules = "99999, 00000"
+excluded_agents = "99999"
+
+# The next 2 settings are used to add information to the messages.
+sender = "Wazuh (IDS)"
+click = "https://documentation.wazuh.com/"
+
+# Priority mapping from 0-15 (Wazuh threat levels) to 1-5 (in notifications) and their respective colors (Discord)
+# https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html
+# Enter threat_map as lists of integers, mention_threshold as integer and color as Hex integer
+[[priority_map]]
+threat_map = [15, 14, 13, 12]
+mention_threshold = 1
+color = 0xec3e40 # Red, SEVERE
+
+[[priority_map]]
+threat_map = [11, 10, 9]
+mention_threshold = 1
+color = 0xff9b2b # Orange, HIGH
+
+[[priority_map]]
+threat_map = [8, 7, 6]
+mention_threshold = 5
+color = 0xf5d800 # Yellow, ELEVATED
+
+[[priority_map]]
+threat_map = [5, 4]
+mention_threshold = 20
+color = 0x377fc7 # Blue, GUARDED
+
+[[priority_map]]
+threat_map = [3, 2, 1, 0]
+mention_threshold = 20
+color = 0x01a465 # Green, LOW
+
+################ End of priority mapping ##################################
+
+# Following parameter defines the markdown characters to emphasise the parameter names in the notification messages
+[markdown_emphasis]
+slack = "*"
+ntfy = "**"
+discord = "**"
+
+##################################################################################
+# From here on the settings are ONLY used by the Python version of wazuh-notify. #
+##################################################################################
+
+[python]
+
+# The next settings are used for testing and troubleshooting.
+
+# Test mode will add the example event in wazuh-notify-test-event.json instead of the message received through wazuh.
+# This enables testing for particular events when the test event is customized.
+test_mode = true
+
+# Enabling this parameter provides more logging to the wazuh-notifier log.
+extended_logging = 2
+
+# Enabling this parameter provides extended logging to the console.
+extended_print = 2
+
+# Below settings provide for a window that enable/disables events from firing the notifiers.
+excluded_days = ""
+
+# Enter as a tuple of string values. Be aware of your regional settings.
+excluded_hours = ["23:59", "00:00"]
