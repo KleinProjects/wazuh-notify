@@ -24,26 +24,31 @@ click = "https://documentation.wazuh.com/"
 [[priority_map]]
 threat_map = [15, 14, 13, 12]
 mention_threshold = 1
+notify_threshold = 1
 color = 0xec3e40 # Red, SEVERE
 
 [[priority_map]]
 threat_map = [11, 10, 9]
 mention_threshold = 1
+notify_threshold = 1
 color = 0xff9b2b # Orange, HIGH
 
 [[priority_map]]
 threat_map = [8, 7, 6]
 mention_threshold = 5
+notify_threshold = 5
 color = 0xf5d800 # Yellow, ELEVATED
 
 [[priority_map]]
 threat_map = [5, 4]
 mention_threshold = 20
+notify_threshold = 5
 color = 0x377fc7 # Blue, GUARDED
 
 [[priority_map]]
 threat_map = [3, 2, 1, 0]
 mention_threshold = 20
+notify_threshold = 5
 color = 0x01a465 # Green, LOW
 
 ################ End of priority mapping ##################################

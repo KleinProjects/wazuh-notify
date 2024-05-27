@@ -29,15 +29,15 @@ func SendNtfy(params types.Params) {
 			"```"
 	} else {
 		payload = time.Now().Format(time.RFC3339) + "\n\n" +
-			"Agent: " + params.WazuhMessage.Parameters.Alert.Agent.Name + "\n" +
-			"Event id: " + params.WazuhMessage.Parameters.Alert.Rule.ID + "\n" +
-			"Description: " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
-			"Threat level: " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
-			"Times fired: " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) + "\n"
+			"**Agent:** " + params.WazuhMessage.Parameters.Alert.Agent.Name + "\n" +
+			"**Event id:** " + params.WazuhMessage.Parameters.Alert.Rule.ID + "\n" +
+			"**Description:** " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
+			"**Threat level:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
+			"**Times fired:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) + "\n"
 	}
 
 	req, _ := http.NewRequest("POST", os.Getenv("NTFY_URL"), strings.NewReader(payload))
-	req.Header.Set("Content-Type", "text/plain")
+	req.Header.Set("Content-Type", "text/markdown")
 
 	if params.General.Sender != "" {
 		req.Header.Add("Title", params.General.Sender)
