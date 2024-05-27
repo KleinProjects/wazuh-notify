@@ -4,7 +4,9 @@ import (
 	"strings"
 	"wazuh-notify/log"
 	"wazuh-notify/notification"
+	"wazuh-notify/ntfy"
 	"wazuh-notify/services"
+	"wazuh-notify/slack"
 )
 
 func main() {
@@ -17,10 +19,10 @@ func main() {
 			notification.SendDiscord(inputParams)
 		case "ntfy":
 			log.Log(target)
-			notification.SendNtfy(inputParams)
+			ntfy.SendNtfy(inputParams)
 		case "slack":
 			log.Log(target)
-			notification.SendSlack(inputParams)
+			slack.SendSlack(inputParams)
 		}
 	}
 	log.CloseLogFile()

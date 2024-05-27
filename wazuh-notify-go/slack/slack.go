@@ -1,4 +1,4 @@
-package notification
+package slack
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 
 func SendSlack(params types.Params) {
 
-	message := types.SlackMessage{
+	message := SlackMessage{
 		Text: services.BuildMessage(params, "slack", params.MarkdownEmphasis.Slack) +
 			"*Tags:* " + params.Tags + "\n\n" +
 			params.General.Click,

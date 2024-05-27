@@ -1,4 +1,4 @@
-package notification
+package discord
 
 import (
 	"bytes"
@@ -16,10 +16,10 @@ func SendDiscord(params types.Params) {
 		"**Tags:** " + params.Tags + "\n\n" +
 		params.General.Click
 
-	message := types.DiscordMessage{
+	message := DiscordMessage{
 		Username: params.General.Sender,
 		Content:  params.Mention,
-		Embeds: []types.Embed{
+		Embeds: []Embed{
 			{
 				Title:       params.General.Sender,
 				Description: embedDescription,

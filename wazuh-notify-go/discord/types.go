@@ -1,4 +1,4 @@
-package types
+package discord
 
 type DiscordMessage struct {
 	Username  string  `json:"username,omitempty"`
