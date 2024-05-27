@@ -3,7 +3,6 @@ package notification
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -35,20 +34,22 @@ func SendSlack(params types.Params) {
 			params.General.Click
 	} else {
 		embedDescription = "\n\n" +
-			"**Timestamp: **" + time.Now().Format(time.DateTime) + "\n" +
-			"**Agent:** " + params.WazuhMessage.Parameters.Alert.Agent.Name + "\n" +
-			"**Event id:** " + params.WazuhMessage.Parameters.Alert.Rule.ID + "\n" +
-			"**Rule:** " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
-			"**Description: **" + params.WazuhMessage.Parameters.Alert.FullLog + "\n" +
-			"**Threat level:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
-			"**Times fired:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) +
+			"*Timestamp:* " + time.Now().Format(time.DateTime) + "\n" +
+			"*Agent:* " + params.WazuhMessage.Parameters.Alert.Agent.Name + "\n" +
+			"*Event id:* " + params.WazuhMessage.Parameters.Alert.Rule.ID + "\n" +
+			"*Rule:* " + params.WazuhMessage.Parameters.Alert.Rule.Description + "\n" +
+			"*Description:* " + params.WazuhMessage.Parameters.Alert.FullLog + "\n" +
+			"*Threat level:* " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
+			"*Times fired:* " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) +
 			"\n\n" +
-			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
-			"Tags: " + params.Tags + "\n\n" +
+			"*Priority:* " + strconv.Itoa(params.Priority) + "\n" +
+			"*Tags:* " + params.Tags + "\n\n" +
 			params.General.Click
 	}
 
-	message := fmt.Sprintf("{\"text\": %s}", embedDescription)
+	message := types.SlackMessage{
+		Text: embedDescription,
+	}
 
 	payload := new(bytes.Buffer)
 

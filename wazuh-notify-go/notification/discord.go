@@ -42,12 +42,12 @@ func SendDiscord(params types.Params) {
 			"**Threat level:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Level) + "\n" +
 			"**Times fired:** " + strconv.Itoa(params.WazuhMessage.Parameters.Alert.Rule.Firedtimes) +
 			"\n\n" +
-			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
-			"Tags: " + params.Tags + "\n\n" +
+			"**Priority:** " + strconv.Itoa(params.Priority) + "\n" +
+			"**Tags:** " + params.Tags + "\n\n" +
 			params.General.Click
 	}
 
-	message := types.Message{
+	message := types.DiscordMessage{
 		Username: params.General.Sender,
 		Content:  params.Mention,
 		Embeds: []types.Embed{
