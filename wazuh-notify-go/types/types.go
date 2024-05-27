@@ -1,25 +1,34 @@
 package types
 
 type Params struct {
-	Url            string
-	Sender         string `yaml:"sender,omitempty"`
-	Priority       int
-	Tags           string
-	Click          string `yaml:"click,omitempty"`
-	Targets        string `yaml:"targets,omitempty"`
-	FullAlert      string `yaml:"full_message,omitempty"`
-	ExcludedRules  string `yaml:"excluded_rules,omitempty"`
-	ExcludedAgents string `yaml:"excluded_agents,omitempty"`
-	Color          int
-	Mention        string
-	WazuhMessage   WazuhMessage
-	PriorityMaps   []PriorityMap `yaml:"priority_map"`
+	General          General `toml:"general"`
+	Url              string
+	Priority         int
+	Tags             string
+	Color            int
+	Mention          string
+	WazuhMessage     WazuhMessage
+	PriorityMap      []PriorityMap    `toml:"priority_map"`
+	MarkdownEmphasis MarkdownEmphasis `toml:"markdown_emphasis"`
 }
 
+type General struct {
+	Targets        string `toml:"targets"`
+	FullAlert      string `toml:"full_alert"`
+	ExcludedRules  string `toml:"excluded_rules"`
+	ExcludedAgents string `toml:"excluded_agents"`
+	Sender         string `toml:"sender"`
+	Click          string `toml:"click"`
+}
 type PriorityMap struct {
-	ThreatMap        []int `yaml:"threat_map"`
-	MentionThreshold int   `yaml:"mention_threshold"`
-	Color            int   `yaml:"color"`
+	ThreatMap        []int `toml:"threat_map"`
+	MentionThreshold int   `toml:"mention_threshold"`
+	Color            int   `toml:"color"`
+}
+type MarkdownEmphasis struct {
+	Slack   string `toml:"slack"`
+	Ntfy    string `toml:"ntfy"`
+	Discord string `toml:"discord"`
 }
 
 type Message struct {

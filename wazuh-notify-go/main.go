@@ -10,7 +10,7 @@ import (
 func main() {
 	inputParams := services.InitNotify()
 
-	for _, target := range strings.Split(inputParams.Targets, ",") {
+	for _, target := range strings.Split(inputParams.General.Targets, ", ") {
 		switch target {
 		case "discord":
 			log.Log(target)

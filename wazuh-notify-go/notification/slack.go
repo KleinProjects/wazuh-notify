@@ -3,6 +3,7 @@ package notification
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +18,7 @@ func SendSlack(params types.Params) {
 
 	var embedDescription string
 
-	if slices.Contains(strings.Split(params.FullAlert, ","), "slack") {
+	if slices.Contains(strings.Split(params.General.FullAlert, ","), "slack") {
 		fullAlert, _ := json.MarshalIndent(params.WazuhMessage, "", "  ")
 		fullAlertString := strings.ReplaceAll(string(fullAlert), `"`, "")
 		fullAlertString = strings.ReplaceAll(fullAlertString, "{", "")
@@ -31,7 +32,7 @@ func SendSlack(params types.Params) {
 			"```\n\n" +
 			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
 			"Tags: " + params.Tags + "\n\n" +
-			params.Click
+			params.General.Click
 	} else {
 		embedDescription = "\n\n" +
 			"**Timestamp: **" + time.Now().Format(time.DateTime) + "\n" +
@@ -44,20 +45,10 @@ func SendSlack(params types.Params) {
 			"\n\n" +
 			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
 			"Tags: " + params.Tags + "\n\n" +
-			params.Click
+			params.General.Click
 	}
 
-	message := types.Message{
-		Username: params.Sender,
-		Content:  params.Mention,
-		Embeds: []types.Embed{
-			{
-				Title:       params.Sender,
-				Description: embedDescription,
-				Color:       params.Color,
-			},
-		},
-	}
+	message := fmt.Sprintf("{\"text\": %s}", embedDescription)
 
 	payload := new(bytes.Buffer)
 

@@ -17,7 +17,7 @@ func SendDiscord(params types.Params) {
 
 	var embedDescription string
 
-	if slices.Contains(strings.Split(params.FullAlert, ","), "discord") {
+	if slices.Contains(strings.Split(params.General.FullAlert, ","), "discord") {
 		fullAlert, _ := json.MarshalIndent(params.WazuhMessage, "", "  ")
 		fullAlertString := strings.ReplaceAll(string(fullAlert), `"`, "")
 		fullAlertString = strings.ReplaceAll(fullAlertString, "{", "")
@@ -31,7 +31,7 @@ func SendDiscord(params types.Params) {
 			"```\n\n" +
 			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
 			"Tags: " + params.Tags + "\n\n" +
-			params.Click
+			params.General.Click
 	} else {
 		embedDescription = "\n\n" +
 			"**Timestamp: **" + time.Now().Format(time.DateTime) + "\n" +
@@ -44,15 +44,15 @@ func SendDiscord(params types.Params) {
 			"\n\n" +
 			"Priority: " + strconv.Itoa(params.Priority) + "\n" +
 			"Tags: " + params.Tags + "\n\n" +
-			params.Click
+			params.General.Click
 	}
 
 	message := types.Message{
-		Username: params.Sender,
+		Username: params.General.Sender,
 		Content:  params.Mention,
 		Embeds: []types.Embed{
 			{
-				Title:       params.Sender,
+				Title:       params.General.Sender,
 				Description: embedDescription,
 				Color:       params.Color,
 			},

@@ -15,7 +15,7 @@ func SendNtfy(params types.Params) {
 
 	var payload string
 
-	if slices.Contains(strings.Split(params.FullAlert, ","), "discord") {
+	if slices.Contains(strings.Split(params.General.FullAlert, ","), "discord") {
 		fullAlert, _ := json.MarshalIndent(params.WazuhMessage, "", "  ")
 		fullAlertString := strings.ReplaceAll(string(fullAlert), `"`, "")
 		fullAlertString = strings.ReplaceAll(fullAlertString, "{", "")
@@ -39,14 +39,14 @@ func SendNtfy(params types.Params) {
 	req, _ := http.NewRequest("POST", os.Getenv("NTFY_URL"), strings.NewReader(payload))
 	req.Header.Set("Content-Type", "text/plain")
 
-	if params.Sender != "" {
-		req.Header.Add("Title", params.Sender)
+	if params.General.Sender != "" {
+		req.Header.Add("Title", params.General.Sender)
 	}
 	if params.Tags != "" {
 		req.Header.Add("Tags", params.Tags)
 	}
-	if params.Click != "" {
-		req.Header.Add("Click", params.Click)
+	if params.General.Click != "" {
+		req.Header.Add("Click", params.General.Click)
 	}
 	if params.Priority != 0 {
 		req.Header.Add("Priority", strconv.Itoa(params.Priority))
