@@ -29,7 +29,7 @@ func CloseLogFile() {
 	if err != nil {
 		panic(err)
 	}
-    logFile.Close()
+	logFile.Close()
 }
 
 func Log(message string) {

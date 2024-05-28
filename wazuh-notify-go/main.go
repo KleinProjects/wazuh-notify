@@ -2,25 +2,32 @@ package main
 
 import (
 	"strings"
-	"wazuh-notify/log"
-	"wazuh-notify/notification"
 	"wazuh-notify/services"
+	"wazuh-notify/services/log"
+	"wazuh-notify/targets/discord"
+	"wazuh-notify/targets/ntfy"
+	"wazuh-notify/targets/slack"
 )
 
 func main() {
-	inputParams := services.InitNotify()
+	//Read config file and .env
+	configParams := services.ReadConfig()
+	//Parse command line flags
+	inputParams := services.ParseFlags(configParams)
+	//Parse wazuh input data from stdin
+	Params := services.ParseWazuhInput(inputParams)
 
-	for _, target := range strings.Split(inputParams.Targets, ",") {
+	for _, target := range strings.Split(Params.General.Targets, ", ") {
 		switch target {
 		case "discord":
 			log.Log(target)
-			notification.SendDiscord(inputParams)
+			discord.SendDiscord(Params)
 		case "ntfy":
 			log.Log(target)
-			notification.SendNtfy(inputParams)
+			ntfy.SendNtfy(Params)
 		case "slack":
 			log.Log(target)
-			notification.SendSlack(inputParams)
+			slack.SendSlack(Params)
 		}
 	}
 	log.CloseLogFile()
