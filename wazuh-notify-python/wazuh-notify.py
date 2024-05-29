@@ -20,16 +20,17 @@ def main():
 
     # Load the TOML config.
     config: dict = get_config()
+
     logger(0, config, me, him, "############ Processing event ###############################")
 
     # Get the arguments used with running the script.
     arguments = get_arguments()
 
-    # Check for test mode. Use test data if true
-    data = check_test_mode(config)
+    # Check for test mode. Use test data if true.
+    event_data = check_test_mode(config)
 
-    # Extract the 'alert' section of the (JSON) event
-    alert = data["parameters"]["alert"]
+    # Extract the 'alert' section of the (JSON) event.
+    alert = event_data["parameters"]["alert"]
     logger(2, config, me, him, "Extracting data from the event")
 
     # Check the config for any exclusion rules and abort when excluded.
@@ -42,86 +43,32 @@ def main():
     config["targets"] = arguments['targets'] if arguments['targets'] != "" else config["targets"]
 
     # Prepare the messaging platform specific notification and execute if configured.
+
+    # Discord notification handler
     if "discord" in config["targets"]:
-        # Show me some ID! Stop resisting!
-        caller = "discord"
-        me = frame(0).f_code.co_name
-        him = frame(1).f_code.co_name
-
-        # Load the url/webhook from the configuration.
-        discord_url, _, _ = get_env()
-        discord_url = arguments['url'] if arguments['url'] else discord_url
-
-        # Build the basic message content.
-        message_body: str = construct_message_body(caller, config, arguments, alert)
-
-        # Common preparation of the notification.
-        notification_body, click, sender = prepare_payload(caller, config, arguments, message_body, alert, priority)
-
-        # Build the payload(s) for the POST request.
-        _, _, payload_json = build_discord_notification(caller, config, notification_body, color, mention, sender)
-
-        # Build the notification to be sent.
-        build_discord_notification(caller, config, notification_body, color, mention, sender)
-
+        payload_json, discord_url = handle_discord_notification(config=config, arguments=arguments, alert=alert,
+                                                                color=color, priority=priority, mention=mention)
         # POST the notification through requests.
-        discord_result = requests.post(discord_url, json=payload_json)
-        logger(1, config, me, him, caller + " notification constructed and sent: " + str(discord_result))
+        discord_result = requests.post(url=discord_url, json=payload_json)
+        logger(1, config, me, him, "Discord notification constructed and sent: " + str(discord_result))
 
+    # ntfy.sh notification handler
     if "ntfy" in config["targets"]:
-        # Show me some ID! Stop resisting!
-        caller = "ntfy"
-        me = frame(0).f_code.co_name
-        him = frame(1).f_code.co_name
-
-        # Load the url/webhook from the configuration.
-        _, ntfy_url, _ = get_env()
-        ntfy_url = arguments['url'] if arguments['url'] else ntfy_url
-
-        # Build the basic message content.
-        message_body: str = construct_message_body(caller, config, arguments, alert)
-
-        # Common preparation of the notification.
-        notification_body, click, sender = prepare_payload(caller, config, arguments, message_body, alert, priority)
-
-        # Build the payload(s) for the POST request.
-        payload_headers, payload_data, _ = build_ntfy_notification(caller, config, notification_body, color, mention,
-                                                                   sender)
-
-        # Build the notification to be sent.
-        build_ntfy_notification(caller, config, notification_body, priority, click, sender)
-
+        payload_data, payload_headers, ntfy_url = handle_ntfy_notification(config=config, arguments=arguments,
+                                                                           alert=alert, priority=priority)
         # POST the notification through requests.
-        ntfy_result = requests.post(ntfy_url, data=payload_data, headers=payload_headers)
-        logger(1, config, me, him, caller + " notification constructed and sent: " + str(ntfy_result))
+        ntfy_result = requests.post(url=ntfy_url, data=payload_data, headers=payload_headers)
+        logger(1, config, me, him, "Ntfy notification constructed and sent: " + str(ntfy_result))
 
-    # if "slack" in config["targets"]:
-    # # Show me some ID! Stop resisting!
-    # caller = "slack"
-    # me = frame(0).f_code.co_name
-    # him = frame(1).f_code.co_name
-    #
-    # # Load the url/webhook from the configuration.
-    # _, _, slack_url = get_env()
-    # slack_url = arguments['url'] if arguments['url'] else slack_url
-    #
-    # # Build the basic message content.
-    # message_body: str = construct_message_body(caller, config, arguments, data)
-    #
-    # # Common preparation of the notification.
-    # notification_body, click, sender = prepare_payload(caller, config, arguments, message_body, alert,
-    #                                                    priority)
-    # # Build the payload(s) for the POST request.
-    # _, _, payload_json = build_slack_notification(caller, config, notification_body, priority, color, mention,
-    #                                               click, sender)
-    #
-    # # Build the notification to be sent.
-    # build_slack_notification(caller, config, notification_body, priority, click, sender)
-    #
-    # result = requests.post(slack_url, headers={'Content-Type': 'application/json'}, json=payload_json)
-    #
-    # logger(1, config, me, him, caller + " notification constructed and sent: " + str(result))
+    # Slack notification handler
+    if "slack" in config["targets"]:
+        payload_json, slack_url = handle_slack_notification(config=config, arguments=arguments, alert=alert,
+                                                            color=color, priority=priority, mention=mention)
 
+        slack_result = requests.post(url=slack_url, headers={'Content-Type': 'application/json'}, json=payload_json)
+        logger(1, config, me, him, "Slack notification constructed and sent: " + str(slack_result))
+
+    # The end of processing
     logger(0, config, me, him, "############ Event processed ################################")
     exit(0)
 
