@@ -90,7 +90,7 @@ def get_env() -> tuple:
 
     # Write the configuration to a dictionary.
     config: dict = get_config()
-    logger(level=2, config=config, me=me, him=him, message='Configuration retrieved to dictionary')
+    logger(level=2, config=config, me=me, him=him, message=f'Configuration retrieved to dictionary')
 
     # Check if the secrets .env file is available.
     try:
@@ -148,8 +148,6 @@ def get_config() -> dict:
 
     return config
 
-
-# Show configuration settings from wazuh-notify-config.yaml
 def view_config() -> None:
     _, _, this_config_path, _ = set_environment()
 
@@ -167,7 +165,7 @@ def get_arguments() -> dict:
     him: str = frame(1).f_code.co_name
 
     config: dict = get_config()
-    logger(level=2, config=config, me=me, him=him, message='Configuration retrieved to dictionary')
+    logger(level=2, config=config, me=me, him=him, message=f'Configuration retrieved to dictionary')
 
     # Short options
     options: str = 'u:s:p:m:t:c:hv'
@@ -177,7 +175,7 @@ def get_arguments() -> dict:
                           'sender=',
                           'targets=',
                           'priority=',
-                          'message=',
+                          'message=f',
                           'tags=',
                           'click=',
                           'help',
@@ -196,8 +194,6 @@ def get_arguments() -> dict:
          -v, --view          show config.
 
     '''
-
-    # Initialize some variables.
     url: str = ''
     sender: str = ''
     targets: str = ''
@@ -212,7 +208,7 @@ def get_arguments() -> dict:
 
     if not argument_list:
         logger(level=1, config=config, me=me, him=him,
-               message='No argument list found (no arguments provided with script execution')
+               message=f'No argument list found (no arguments provided with script execution')
 
         # Store defaults for the non-existing arguments in the arguments dictionary to avoid None errors.
         arguments: dict = {'url': url,
@@ -227,7 +223,7 @@ def get_arguments() -> dict:
         try:
             # Parsing arguments
             p_arguments, values = getopt.getopt(argument_list, options, long_options)
-            logger(level=2, config=config, me=me, him=him, message='Parsing arguments')
+            logger(level=2, config=config, me=me, him=him, message=f'Parsing arguments')
 
             # Check each argument. Arguments that are present will override the defaults.
             for current_argument, current_value in p_arguments:
@@ -255,7 +251,7 @@ def get_arguments() -> dict:
 
             # Output error, and return error code
             logger(level=0, config=config, me=me, him=him, message=f'Error during argument parsing: %s' % err)
-        logger(level=2, config=config, me=me, him=him, message='Arguments returned as dictionary')
+        logger(level=2, config=config, me=me, him=him, message=f'Arguments returned as dictionary')
 
         # Store the arguments in the arguments dictionary.
         arguments: dict = {'url': url, 'sender': sender, 'targets': targets, 'message': message,
@@ -270,14 +266,11 @@ def get_arguments() -> dict:
 
 # Receive and load message from Wazuh
 def load_message() -> dict:
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
     config: dict = get_config()
 
-    # get alert from stdin
-    logger(level=2, config=config, me=me, him=him, message='Loading event message from STDIN')
-
+    logger(level=2, config=config, me=me, him=him, message=f'Loading event message from STDIN')
     input_str: str = ''
     for line in sys.stdin:
         input_str: str = line
@@ -286,79 +279,71 @@ def load_message() -> dict:
     data: json = json.loads(input_str)
 
     if data.get('command') == 'add':
-        logger(level=1, config=config, me=me, him=him, message='Relevant event data found')
+        logger(level=1, config=config, me=me, him=him, message=f'Relevant event data found')
         return data
     else:
-        # Event came in, but wasn't processed.
-        logger(level=0, config=config, me=me, him=him, message='Event data not found')
+        logger(level=0, config=config, me=me, him=him, message=f'Event data not found')
         sys.exit(1)
 
 
-# Check if we are in test mode (test_mode setting in config yaml). If so, load test event instead of live event.
 def check_test_mode(config) -> dict:
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
 
     if config.get('python').get('test_mode'):
         logger(level=1, config=config, me=me, him=him,
-               message='Running in test mode: using test message wazuh-notify-test-event.json')
+               message=f'Running in test mode: using test message wazuh-notify-test-event.json')
         # Load the test event data.
         home_path, _, _ = set_environment()
         with (open(home_path + '/etc/wazuh-notify-test-event.json') as event_file):
             data: dict = json.loads(event_file.read())
     else:
         # We are running live. Load the data from the Wazuh process.
-        logger(level=2, config=config, me=me, him=him, message='Running in live mode: using live message')
+        logger(level=2, config=config, me=me, him=him, message=f'Running in live mode: using live message')
         data: dict = load_message()
 
     return data
 
 
-# Check if there are reasons not to process this event. Check exclusions for rules, agents, days and hours.
+# Check if there are reasons not to process this event. Check exclusions for rules, agents, days and hours from config.
 def exclusions_check(config, alert) -> bool:
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
 
-    # Set some environment
     now_message, now_logging, now_weekday, now_time = set_time_format()
-    logger(level=2, config=config, me=me, him=him,
-           message='Setting pretty datetime formats for notifications and logging.')
+    logger(level=2, config=config, me=me, him=him, message=f'Get datetime formats for evaluation purposes.')
 
-    # Check the exclusion records from the configuration yaml.
-    logger(level=1, config=config, me=me, him=him, message='Checking if we are outside of the exclusion rules: ')
+    logger(level=1, config=config, me=me, him=him, message=f'Checking if we are outside of the exclusion rules: ')
     ex_hours: tuple = config.get('python').get('excluded_hours')
-
-    # Start hour may not be later than end hours. End hour may not exceed 00:00 midnight to avoid day jump.
-    ex_hours: tuple = [ex_hours[0], '23:59'] if (ex_hours[1] >= '23:59' or ex_hours[1] < ex_hours[0]) else ex_hours
-
-    # Get some more exclusion records from the config.
     ex_days: str = config.get('python').get('excluded_days')
     ex_agents: str = config.get('general').get('excluded_agents')
     ex_rules: str = config.get('general').get('excluded_rules')
 
-    # Check agent and rule from within the event.
-    ev_agent = alert['agent']['id']
-    ev_rule = alert['rule']['id']
+    # Get agent and rule from within the event.
+    ev_agent: str = alert['agent']['id']
+    ev_rule: str = alert['rule']['id']
 
+    # Start hour may not be later than end hours. End hour may not exceed 00:00 midnight to avoid day jump.
+    ex_hours: tuple = [ex_hours[0], '23:59'] if (ex_hours[1] >= '23:59' or ex_hours[1] < ex_hours[0]) else ex_hours
+    
     # Let's assume all lights are green, until proven otherwise.
     ex_hours_eval, ex_weekday_eval, ev_rule_eval, ev_agent_eval = True, True, True, True
 
     # Evaluate the conditions for sending a notification. Any False will cause the notification to be discarded.
     if (now_time > ex_hours[0]) and (now_time < ex_hours[1]):
-        logger(level=2, config=config, me=me, him=him, message='excluded: event inside exclusion time frame')
+        logger(level=2, config=config, me=me, him=him, message=f'excluded: event inside exclusion time frame')
         ex_hours_eval = False
     elif now_weekday in ex_days:
-        logger(level=2, config=config, me=me, him=him, message='excluded: event inside excluded weekdays')
+        logger(level=2, config=config, me=me, him=him, message=f'excluded: event inside excluded weekdays')
         ex_weekday_eval = False
     elif ev_rule in ex_rules:
-        logger(level=2, config=config, me=me, him=him, message='excluded: event id inside exclusion list')
+        logger(level=2, config=config, me=me, him=him, message=f'excluded: event id inside exclusion list')
         ev_rule_eval = False
     elif ev_agent in ex_agents:
-        logger(level=2, config=config, me=me, him=him, message='excluded: event agent inside exclusion list')
+        logger(level=2, config=config, me=me, him=him, message=f'excluded: event agent inside exclusion list')
         ev_rule_eval = False
 
-    notification_eval = True if (ex_hours_eval and ex_weekday_eval and ev_rule_eval and ev_agent_eval) else False
+    notification_eval: bool = True if (ex_hours_eval and ex_weekday_eval and ev_rule_eval and ev_agent_eval) else False
     logger(level=1, config=config, me=me, him=him,
            message=f'Exclusion rules evaluated. Process event is %s' % notification_eval)
 
@@ -367,12 +352,11 @@ def exclusions_check(config, alert) -> bool:
 
 # Map the event threat level to the appropriate 5-level priority scale and color for use in the notification platforms.
 def threat_mapping(config, threat_level, fired_times):
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
 
     # Map threat level to priority. Enters Homeland Security :-).
-    p_map = config.get('priority_map')
+    p_map: dict = config.get('priority_map')
     logger(level=2, config=config, me=me, him=him, message=f'Threat mapping: priority mapped to: %s' % p_map)
 
     for i in range(len(p_map)):
@@ -380,14 +364,14 @@ def threat_mapping(config, threat_level, fired_times):
         logger(level=2, config=config, me=me, him=him, message=f'Threat mapping: threat level found: %s' % threat_level)
 
         if threat_level in p_map[i]['threat_map']:
-            color_mapping = p_map[i]['color']
+            color_mapping: dict = p_map[i]['color']
             priority_mapping = 5 - i
-            logger(level=2, config=config, me=me, him=him, message=f'Threat mapping: priority: %s' % priority_mapping)
-            logger(level=2, config=config, me=me, him=him, message=f'Threat mapping: color: %s' % color_mapping)
+            logger(level=2, config=config, me=me, him=him,
+                   message=f'Threat mapping: priority %s and color %s' % (priority_mapping, color_mapping))
 
             if fired_times >= p_map[i]['notify_threshold']:
                 logger(level=2, config=config, me=me, him=him,
-                       message='The notification_threshold prevents this message from sending')
+                       message=f'The notification_threshold prevents this message from sending')
                 exit(0)
 
             if fired_times >= p_map[i]['mention_threshold']:
@@ -403,7 +387,7 @@ def threat_mapping(config, threat_level, fired_times):
 
             return priority_mapping, color_mapping, mention_flag
 
-    logger(level=0, config=config, me=me, him=him, message='Threat level mapping failed! Returning (99, 99, 99)')
+    logger(level=0, config=config, me=me, him=him, message=f'Threat level mapping failed! Returning (99, 99, 99)')
     return 99, 99, '99'
 
 
@@ -414,7 +398,6 @@ def threat_mapping(config, threat_level, fired_times):
 
 # Construct the message that will be sent to the notifier platforms.
 def construct_message_body(caller, config, arguments, alert) -> str:
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
 
@@ -442,17 +425,16 @@ def construct_message_body(caller, config, arguments, alert) -> str:
                     md_e + 'Times fired:' + md_e + ' ' + str(alert['rule']['firedtimes']) + '\n'
             )
     logger(level=2, config=config, me=me, him=him,
-           message=f'%s basic message constructed.\n %s' % (caller, message_body))
+           message=f'%s basic message constructed.\n%s' % (caller, message_body))
     return message_body
 
 
 # Construct the notification (message + additional information) that will be sent to the notifier platforms.
 def prepare_payload(caller, config, arguments, message_body, alert, priority):
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
 
-    logger(level=2, config=config, me=me, him=him, message='Payload being constructed.')
+    logger(level=2, config=config, me=me, him=him, message=f'Payload being constructed.')
 
     md_map = config.get('markdown_emphasis', '')
     md_e = md_map[caller]
@@ -464,7 +446,7 @@ def prepare_payload(caller, config, arguments, message_body, alert, priority):
             .replace("'", '')
             .replace(',', ', ')
             )
-    logger(level=2, config=config, me=me, him=him, message='Full event formatted.')
+    logger(level=2, config=config, me=me, him=him, message=f'Full event formatted.')
 
     full_event: str = str(json.dumps(alert, indent=4)
                           .replace('"', '')
@@ -495,7 +477,7 @@ def prepare_payload(caller, config, arguments, message_body, alert, priority):
     # Add priority & tags to the notification body
     notification_body = (notification_body + '\n\n' + md_e + 'Priority:' + md_e + ' ' + str(priority) + '\n' +
                          md_e + 'Tags:' + md_e + ' ' + tags + '\n\n' + click)
-    logger(level=2, config=config, me=me, him=him, message='Adding priority and tags')
+    logger(level=2, config=config, me=me, him=him, message=f'Adding priority and tags')
 
     config['targets'] = arguments['targets'] if arguments['targets'] != '' else config['targets']
 
@@ -509,59 +491,53 @@ def prepare_payload(caller, config, arguments, message_body, alert, priority):
 
 # Build the notification for this specific platform.
 def build_discord_notification(config, notification_body, color, mention, sender):
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
-    logger(level=2, config=config, me=me, him=him, message='Discord payload created')
+    logger(level=2, config=config, me=me, him=him, message=f'Discord payload created')
 
     payload_json = {'username': sender,
                     'content': mention,
                     'embeds': [{'description': notification_body,
                                 'color': color,
                                 'title': sender}]}
-    logger(level=2, config=config, me=me, him=him, message='Discord notification built')
+    logger(level=2, config=config, me=me, him=him, message=f'Discord notification built')
     return '', '', payload_json
 
 
 # Build the notification for this specific platform.
 def build_ntfy_notification(config, notification_body, priority, click, sender):
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
-    logger(level=2, config=config, me=me, him=him, message='Ntfy payloads created')
+    logger(level=2, config=config, me=me, him=him, message=f'Ntfy payloads created')
 
     payload_data = notification_body
     payload_headers = {'Markdown': 'yes',
                        'Title': sender,
                        'Priority': str(priority),
                        'Click': click}
-    logger(level=2, config=config, me=me, him=him, message='Ntfy notification built')
+    logger(level=2, config=config, me=me, him=him, message=f'Ntfy notification built')
     return payload_headers, payload_data, ''
 
 
 # Build the notification for this specific platform.
 def build_slack_notification(config, notification_body, color, mention, sender):
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
-    logger(level=2, config=config, me=me, him=him, message='Slack payload created')
+    logger(level=2, config=config, me=me, him=him, message=f'Slack payload created')
 
-    payload_json = {'username': sender,
-                    'content': mention,
-                    'embeds': [{'description': notification_body,
-                                'color': color,
-                                'title': sender}]}
-    logger(level=2, config=config, me=me, him=him, message='Slack notification built')
+    notification_body = '*' + sender + '*' + '\n\n' + notification_body
+
+    payload_json = {'username': sender, 'text': notification_body}
+    logger(level=2, config=config, me=me, him=him, message=f'Slack notification built')
     return '', '', payload_json
 
 
 # Handle the complete notification generation for this specific platform.
 def handle_discord_notification(config, arguments, alert, color, priority, mention):
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
 
-    logger(level=1, config=config, me=me, him=him, message='Process discord notification: start')
+    logger(level=1, config=config, me=me, him=him, message=f'Process discord notification: start')
 
     # Load the url/webhook from the configuration.
     discord_url, _, _ = get_env()
@@ -578,17 +554,16 @@ def handle_discord_notification(config, arguments, alert, color, priority, menti
     _, _, payload_json = build_discord_notification(config=config, notification_body=notification_body, color=color,
                                                     mention=mention, sender=sender)
 
-    logger(level=1, config=config, me=me, him=him, message='Process discord notification: done')
+    logger(level=1, config=config, me=me, him=him, message=f'Process discord notification: done')
     return payload_json, discord_url
 
 
 # Handle the complete notification generation for this specific platform.
 def handle_ntfy_notification(config, arguments, alert, priority):
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
 
-    logger(level=1, config=config, me=me, him=him, message='Process ntfy notification: start')
+    logger(level=1, config=config, me=me, him=him, message=f'Process ntfy notification: start')
 
     # Load the url/webhook from the configuration.
     _, ntfy_url, _ = get_env()
@@ -608,17 +583,16 @@ def handle_ntfy_notification(config, arguments, alert, priority):
     payload_headers, payload_data, _ = build_ntfy_notification(config=config, notification_body=notification_body,
                                                                priority=priority, click=click, sender=sender)
 
-    logger(level=1, config=config, me=me, him=him, message='Process ntfy notification: done')
+    logger(level=1, config=config, me=me, him=him, message=f'Process ntfy notification: done')
     return payload_data, payload_headers, ntfy_url
 
 
 # Handle the complete notification generation for this specific platform.
 def handle_slack_notification(config, arguments, alert, color, priority, mention):
-    # The 'me' variable sets the called function (current function), the 'him' the calling function. Used for logging.
     me: str = frame(0).f_code.co_name
     him: str = frame(1).f_code.co_name
 
-    logger(level=1, config=config, me=me, him=him, message='Process slack notification: start')
+    logger(level=1, config=config, me=me, him=him, message=f'Process slack notification: start')
 
     # Load the url/webhook from the configuration.
     _, _, slack_url = get_env()
@@ -635,5 +609,5 @@ def handle_slack_notification(config, arguments, alert, color, priority, mention
     _, _, payload_json = build_slack_notification(config=config, notification_body=notification_body, color=color,
                                                   mention=mention, sender=sender)
 
-    logger(level=1, config=config, me=me, him=him, message='Process slack notification: done')
+    logger(level=1, config=config, me=me, him=him, message=f'Process slack notification: done')
     return payload_json, slack_url

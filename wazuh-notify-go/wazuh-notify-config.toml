@@ -48,7 +48,7 @@ color = 0x377fc7 # Blue, GUARDED
 [[priority_map]]
 threat_map = [3, 2, 1, 0]
 mention_threshold = 20
-notify_threshold = 5
+notify_threshold = 1
 color = 0x01a465 # Green, LOW
 
 ################ End of priority mapping ##################################
@@ -69,7 +69,7 @@ discord = "**"
 
 # Test mode will add the example event in wazuh-notify-test-event.json instead of the message received through wazuh.
 # This enables testing for particular events when the test event is customized.
-test_mode = true
+test_mode = false
 
 # Enabling this parameter provides more logging to the wazuh-notifier log.
 extended_logging = 2
