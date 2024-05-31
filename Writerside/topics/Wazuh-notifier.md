@@ -1,33 +1,34 @@
 # Wazuh notify
+*version 1.0*
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [Installation](#installation)
-    - [Step 1](#step-1-download)
-    - [Step 2](#step-2-copy-files)
+    - [Step 1: download](#step-1-download)
+    - [Step 2: copy files](#step-2-copy-files)
         - [Python](#python_1)
         - [Golang](#golang_1)
-    - [Step 3](#step-3)
-    - [Step 4](#step-4)
-- [Configuration](#configuration)
+    - [Step 3: copy the TOML file](#step-3-copy-the-toml-configuration-file)
+    - [Step 4: create .env file](#step-4-create-env-file)
+- [Wazuh configuration](#wazuh-configuration)
     - [Golang](#golang_2)
     - [Python](#python_2)
     - [Note](#note)
-- [The YAML configuration](#the-yaml-configuration)
+- [The TOML configuration file](#the-toml-configuration)
 - [Setting up the platforms](#setting-up-the-platforms-receiving-the-notifications)
 
 ## Introduction
 
-Wazuh notifier enables the Wazuh manager to be notified when selected events occur, using 3 messaging platforms:
+Wazuh notifier enables the Wazuh manager to be notified when Wazuh selected events occur, using 3 messaging platforms:
 [ntfy.sh](https://ntfy.sh), [Discord](https://discord.com) and [Slack](https://slack.com).
 
-There are 2 implementations of Wazuh notify. One written in Golang and the other in Python. Both implementations have
-similar functionality, but the Python version is slightly more configurable.
+There are 2 implementations of Wazuh notify. One written in Golang, the other in Python. Both implementations have
+similar functionality, but the Python version is slightly more configurable for testing purposes.
 
-Wazuh notify is a stateless implementation and only notifies, triggered by selected rules, agents, or threat levels.
+Wazuh notify is a stateless implementation and only notifies: triggered by specific rules, agents, or threat levels.
 
-Wazuh notify is triggered by configuring the **ossec.conf** and adding an **active response configuration.**
+Wazuh notify is executed by configuring the **ossec.conf** and adding an **active response configuration**.
 
 ## Installation
 
@@ -79,27 +80,27 @@ Set the correct permissions {id="set-the-correct-permissions_2"}
 $ sudo chmod uog+rx /var/ossec/active-response/bin/wazuh-notify
 ```
 
-### Step 3
+### Step 3: copy the TOML configuration file
 
-Copy the YAML file to /var/ossec/etc/
+Copy the TOML file to /var/ossec/etc/
 
 ```
-$ sudo cp <download folder>/wazuh-notify-config.yaml /var/ossec/etc/
+$ sudo cp <download folder>/wazuh-notify-config.toml /var/ossec/etc/
 ```
 
 Set the correct ownership {id="set-the-correct-ownership_3"}
 
 ```
-$ sudo chown root:wazuh /var/ossec/etc/wazuh-notify-config.yaml
+$ sudo chown root:wazuh /var/ossec/etc/wazuh-notify-config.toml
 ```
 
 Set the correct permissions {id="set-the-correct-permissions_3"}
 
 ```
-$ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
+$ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.toml
 ```
 
-### Step 4
+### Step 4: create .env file
 
 Create an .env file in /var/ossec/etc/
 
@@ -110,16 +111,16 @@ $ sudo touch /var/ossec/etc/.env
 Set the correct ownership {id="set-the-correct-ownership_4"}
 
 ```
-$ sudo chown root:wazuh /var/ossec/etc/wazuh-notify-config.yaml
+$ sudo chown root:wazuh /var/ossec/etc/wazuh-notify-config.toml
 ```
 
 Set the correct permissions {id="set-the-correct-permissions_4"}
 
 ```
-$ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.yaml
+$ sudo chmod uog+r /var/ossec/etc/wazuh-notify-config.toml
 ```
 
-## Configuration
+## Wazuh configuration
 
 #### _Golang_ {id="golang_2"}
 
@@ -169,26 +170,27 @@ Modify the /var/ossec/etc/ossec.conf configuration file and add the following:<b
 </active-response>
 ```
 
-#### NOTE:
-
+#### NOTE: <format color="OrangeRed">!</format>
 The ```<name>``` in the ```<command>``` section needs to be the same as the ```<command>``` in
 the ```<active-response>``` section.
 The ```<command>``` section describes the program that is executed. The ```<active-response>``` section describes the
 trigger that runs the ```<command>```.
 
 Add the rules you want to be informed about between the ```<rules_id></rules_id>```, with the rules id's separated by
-comma's.
-Example: ```<rules_id>5402, 3461, 8777</rules_id><br/>```
+comma's.  
+Example: ```<rules_id>5402, 3461, 8777</rules_id>```.
+
 Please refer to
 the [Wazuh online documentation](https://documentation.wazuh.com/current/user-manual/capabilities/active-response/index.html)
 for more information.
 
-## The YAML configuration
+## The TOML configuration
 
-This is the yaml config file for wazuh-active-response (for both the Python and Go version)
+This is the toml configuration file for wazuh-notify (for both the Python and Golang version).
 
 The targets setting defines the platforms where notifications will be sent to.
-Platforms in this comma-separated string will receive notifications.
+Platforms in this comma-separated string will receive notifications, if and when they are set up. 
+Refer to [setting up the platforms](#setting-up-the-platforms-receiving-the-notifications).
 
 ```
 targets: "slack, ntfy, discord"
@@ -197,7 +199,7 @@ targets: "slack, ntfy, discord"
 Platforms in this comma-separated string will receive the full event information.
 
 ```
-full_message: "" 
+full_alert: "" 
 ```
 
 Exclude_rules and excluded_agents will disable notification for these particular events or agents that are enabled in
@@ -212,42 +214,59 @@ excluded_rules: "99999, 00000"
 excluded_agents: "99999"
 ```
 
-There is a mapping
-from [Wazuh threat levels](https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html) (0-15)
-to priorities (1-5) in notifications.
-The colors are derived from
-the [Homeland Security Advisory System](https://en.wikipedia.org/wiki/Homeland_Security_Advisory_System).
+[The threat levels used in Wazuh](https://documentation.wazuh.com/current/user-manual/ruleset/rules-classification.html) 
+(0-15) are mapped to notification priority levels (1-5), and their respective colors (Discord only).
+The Wazuh threat level scale runs from 0-15, where 15 is the most severe threat. It corresponds to the 
+[HSAS](https://en.wikipedia.org/wiki/Homeland_Security_Advisory_System) threat scale that runs from 5-1, whereby 1 is 
+the highest threat level. The configuration allows for customized mapping: in some use cases the mapping could be different.
 
-Enter the values for the threat_map as lists of integers, mention_thresholds as integers and colors as Hex integers.
+The mention threshold defines when Discord users receive a DM, next to the common messages they receive in their channel.
+Often these common channels are muted and DM's will draw more attention. 1 means that for every notification a DM will be sent.
+A mention threshold of 5 means that for every 5th occurrence of this specific event, a DM will be sent also.
 
-The mention_threshold, relates to the number of times a rule has been fired. When the times fired is equal to or greater
-than the mention_threshold, the recipient will receive a Discord mention in addition to the normal message.
+The notify threshold is somewhat similar to the mention threshold. A notify threshold of 1 will send each notification, 
+a notify threshold of 4 will only send each 4th notification triggered by a specific event. This will reduce high amounts
+of notifications for the same event. The fired_times value in the message will show the actual number of the times this 
+specific event was generated.
 
-This setting is a list notation.
-
+Enter a threat_map as a list of integers,  
+color as a hex RGB color values,
+mention/notify_threshold as integers.
 ```
-priority_map:
-  - threat_map: [ 15,14,13,12 ]
-    mention_threshold: 1
-    color: 0xec3e40 # Red, SEVERE
-  - threat_map: [ 11,10,9 ]
-    mention_threshold: 1
-    color: 0xff9b2b # Orange, HIGH
-  - threat_map: [ 8,7,6 ]
-    mention_threshold: 5
-    color: 0xf5d800 # Yellow, ELEVATED
-  - threat_map: [ 5,4 ]
-    mention_threshold: 20
-    color: 0x377fc7 # Blue, GUARDED
-  - threat_map: [ 3,2,1,0 ]
-    mention_threshold: 20
-    color: 0x01a465 # Green, LOW
+[[priority_map]]                # Priority 1 on the HSAS scale
+threat_map = [15, 14, 13, 12]   # Wazuh threat levels -> priority 2
+color = 0xec3e40                # Red, SEVERE on the HSAS scale
+mention_threshold = 1           
+notify_threshold = 1
+
+[[priority_map]]                # Priority 2 on the HSAS scale
+threat_map = [11, 10, 9]        # Wazuh threat levels -> priority 2
+color = 0xff9b2b                # Orange, HIGH on the HSAS scale
+mention_threshold = 1
+notify_threshold = 1
+
+[[priority_map]]                # Priority 3 on the HSAS scale
+threat_map = [8, 7, 6]          # Wazuh threat levels -> priority 3
+color = 0xf5d800                # Yellow, ELEVATED on the HSAS scale
+mention_threshold = 5
+notify_threshold = 5
+
+[[priority_map]]                # Priority 4 on the HSAS scale
+threat_map = [5, 4]             # Wazuh threat levels -> priority 4
+color = 0x377fc7                # Blue, GUARDED on the HSAS scale
+mention_threshold = 20
+notify_threshold = 5
+
+[[priority_map]]                # Priority 5 on the HSAS scale
+threat_map = [3, 2, 1, 0]       # Wazuh threat levels -> priority 5
+color = 0x01a465                # Green, LOW on the HSAS scale
+mention_threshold = 20
+notify_threshold = 1
 ```
 
-The next 2 settings are used to add information to the messages.
-Sender translate to the ``` username ``` field in Discord and to the ```title``` field in ntfy.sh. It is not used for
-Slack.
-Click adds an arbitrary URL to the message.
+The next settings are used to add information to the messages.
+```Sender``` translate to the ``` username ``` field in Discord and Slack and to the ```title``` field in ntfy.sh. 
+The ```click``` parameter adds an arbitrary URL to the message.
 
 ```
 sender: "Wazuh (IDS)"
@@ -264,15 +283,14 @@ Enter ```excluded_days``` as a string with comma separated values. Be aware of y
 excluded_days: "" 
 ```
 
-Enter ```excluded_hours``` as a tuple of string values. Be aware of your regional settings.
+Enter ```excluded_hours``` as a tuple of string values.
 
 ```
 excluded_hours: [ "23:59", "00:00" ]
 ```
 
 The following parameters define the markdown characters used to emphasise the parameter names in the notification
-messages (Markdown style)
-This is a dictionary (object) notation.
+messages (Markdown style). This is a dictionary notation.
 
 ```
 markdown_emphasis:
@@ -283,29 +301,26 @@ discord: "**"
 
 The next settings are used for testing purposes.
 
-Test mode will add an example event (wazuh-notify-test-event.json) instead of the message received through Wazuh.
-This enables testing for particular events when the test event is customized.
+```Test mode``` will add an example event (```wazuh-notify-test-event.json```) instead of the message received through Wazuh.
+This enables customization for testing of a particular event.
 
 ```
 test_mode: False
 ```
 
-Setting this parameter provides more logging to the wazuh-notifier log. Possible values are
-0 (almost no logging),
-1 (basic logging) and
-2 (verbose logging)
+Setting the ```extended_logging``` and ```extended_print``` parameters provides more logging to the wazuh-notifier log
+and console. The possible values are:
+
+0-> limited logging   
+1-> basic logging   
+2-> verbose logging
 
 ```
 extended_logging: 2
-```
-
-Enabling this parameter provides extended logging to the console (see extended logging).
-
-```
 extended_print: 0
 ```
 
-## Setting up the platforms receiving the notifications
+### Setting up the platforms receiving the notifications
 
 Each of the 3 platforms make use of webhooks or similar API's. In order to have the right information in the ```.env```
 file, please refer to the platform's documentation.
