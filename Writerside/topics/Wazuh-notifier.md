@@ -1,6 +1,10 @@
 # Wazuh notify
 *version 1.0*
 
+
+<img alt="Darius-logo-black.svg" src="../../Darius-logo-black.svg" align="left" width="300" height="300"/>
+
+
 ## Table of Contents
 
 - [Introduction](#introduction)
@@ -332,3 +336,4 @@ file, please refer to the platform's documentation.
 [ntfy.sh](https://docs.ntfy.sh/examples/) examples
 
 [Discord](https://discord.com/developers/docs/intro) developers documentation
+
