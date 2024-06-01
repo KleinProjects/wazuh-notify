@@ -1,9 +1,6 @@
 # Wazuh notify
 *version 1.0* 
 
-
-![](Darius-logo-black.svg){ width="450"}
-
 ## Table of Contents
 
 - [Introduction](#introduction)
