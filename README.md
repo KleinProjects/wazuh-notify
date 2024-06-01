@@ -1,8 +1,5 @@
 # Wazuh notify
-*version 1.0*
-
-<img align="left" alt="Darius-logo-black.svg" height="200" src="Darius-logo-black.svg" width="300"/>
-
+*version 1.0* 
 
 ## Table of Contents
 
