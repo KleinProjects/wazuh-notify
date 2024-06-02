@@ -22,8 +22,7 @@ from dotenv import load_dotenv
 #               config_path = wazuh-notify-config.toml
 
 def set_environment() -> tuple:
-    set_wazuh_path = os.path.abspath(os.path.join(__file__, '../..'))
-    # set_wazuh_path = os.path.abspath(os.path.join(__file__, '../../..'))
+    set_wazuh_path = os.path.abspath(os.path.join(__file__, '../../..'))
     set_log_path = '{0}/logs/wazuh-notify.log'.format(set_wazuh_path)
     set_config_path = '{0}/etc/wazuh-notify-config.toml'.format(set_wazuh_path)
 
