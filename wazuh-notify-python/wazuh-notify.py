@@ -10,7 +10,7 @@
 
 import requests
 from requests import Response
-
+import github
 from wazuh_notify_module import *
 
 
