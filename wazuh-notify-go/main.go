@@ -9,6 +9,7 @@ import (
 	"wazuh-notify/targets/slack"
 )
 
+// test
 func main() {
 	//Read config file and .env
 	configParams := services.ReadConfig()
