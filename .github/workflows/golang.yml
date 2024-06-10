@@ -20,9 +20,12 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.22'
+        
+    - name: tset
+      run: ls -all
 
     - name: Build
-      run: go build -v wazuh-notify-go
+      run: go build -v ./wazuh-notify-go
       
     - name: Release
       uses: softprops/action-gh-release@v2
