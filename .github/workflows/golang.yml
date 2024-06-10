@@ -24,7 +24,7 @@ jobs:
     - name: Build
       run: |
         cd wazuh-notify-go
-        go build -v ./wazuh-notify-go
+        go build -v .
       
     - name: Release
       uses: softprops/action-gh-release@v2
