@@ -12,3 +12,5 @@ similar functionality, but the Python version is slightly more configurable for 
 Wazuh notify is a stateless implementation and only notifies: triggered by specific rules, agents, or threat levels.
 
 Wazuh notify is executed by configuring the **ossec.conf** and adding an **active response configuration**.
+
+### Please refer to https://docs.notifier.kleinsense.nl/wazuh-notifier.html for the full documentation.
