@@ -24,11 +24,6 @@ jobs:
       run: |
         cd wazuh-notify-go
         go build -v .
-        
-    - name: Put current date into a variable
-      run: |
-        $NOW=& Get-Date -format yyyy-MM-dd
-        echo "NOW=$NOW" >> $env:GITHUB_ENV
       
     - name: Release
       uses: softprops/action-gh-release@v2
