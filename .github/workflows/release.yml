@@ -18,18 +18,35 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.22'      
+        go-version: '1.23'
 
     - name: Build
       run: |
         cd wazuh-notify-go
         go build -v .
+
+    - name: Set variables
+      run: |
+        GO_VER=$(cat wazuh-notify-python/VERSION)
+        echo "GO_VERSION=$VER" >> $GITHUB_ENV
+        GO_VER=$(cat wazuh-notify-go/VERSION)
+        echo "GO_VERSION=$VER" >> $GITHUB_ENV    
       
-    - name: Release
+    - name: Release Go
       uses: softprops/action-gh-release@v2
       with:
         token: ${{ secrets.RELEASE_TOKEN }}
-        tag_name: Golang-vx.x.x
+        tag_name: Golang-v${{ evn.GO_VERSION }}
         files: |
           wazuh-notify-go/wazuh-notify
           wazuh-notify-go/wazuh-notify-config.toml
+          licence.MD
+
+    - name: Release python
+      uses: softprops/action-gh-release@v2
+      with:
+        token: ${{ secrets.RELEASE_TOKEN }}
+        tag_name: Python-v${{ evn.PYTHON_VERSION }}
+        files: |
+          wazuh-notify-python
+          licence.MD
