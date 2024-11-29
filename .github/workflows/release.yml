@@ -25,12 +25,10 @@ jobs:
         cd wazuh-notify-go
         go build -v .
 
-    - name: Set variables
+    - name: Set go variables
       run: |
-        GO_VER=$(cat wazuh-notify-python/VERSION)
-        echo "GO_VERSION=$VER" >> $GITHUB_ENV
-        GO_VER=$(cat wazuh-notify-go/VERSION)
-        echo "GO_VERSION=$VER" >> $GITHUB_ENV    
+        cd wazuh-notify-go && GO_VER=$(cat VERSION)
+        echo "GO_VERSION=$GO_VER" >> $GITHUB_ENV       
       
     - name: Release Go
       uses: softprops/action-gh-release@v2
@@ -42,11 +40,19 @@ jobs:
           wazuh-notify-go/wazuh-notify-config.toml
           licence.MD
 
+    - name: Set python variables
+      run: |
+        cd wazuh-notify-python && PY_VER=$(cat VERSION)
+        echo "PY_VERSION=$PY_VER" >> $GITHUB_ENV
+
+    - name: zip Python
+      run: zip -r wazuh-notify-python.zip wazuh-notify-python
+
     - name: Release python
       uses: softprops/action-gh-release@v2
       with:
         token: ${{ secrets.RELEASE_TOKEN }}
         tag_name: Python-v${{ env.PYTHON_VERSION }}
         files: |
-          wazuh-notify-python
+          wazuh-notify-python.zip
           licence.MD
