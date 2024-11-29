@@ -46,13 +46,13 @@ jobs:
         echo "PY_VERSION=$PY_VER" >> $GITHUB_ENV
 
     - name: zip Python
-      run: zip -r wazuh-notify-python.zip wazuh-notify-python
+      run: zip -r wazuh-notify-python.zip wazuh-notify-python wazuh-notify-go/wazuh-notify-config.toml
 
     - name: Release python
       uses: softprops/action-gh-release@v2
       with:
         token: ${{ secrets.RELEASE_TOKEN }}
-        tag_name: Python-v${{ env.PYTHON_VERSION }}
+        tag_name: Python-v${{ env.PY_VERSION }}
         files: |
           wazuh-notify-python.zip
           licence.MD
