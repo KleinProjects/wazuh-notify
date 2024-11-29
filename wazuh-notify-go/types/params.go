@@ -13,12 +13,13 @@ type Params struct {
 }
 
 type General struct {
-	Targets        string `toml:"targets"`
-	FullAlert      string `toml:"full_alert"`
-	ExcludedRules  string `toml:"excluded_rules"`
-	ExcludedAgents string `toml:"excluded_agents"`
-	Sender         string `toml:"sender"`
-	Click          string `toml:"click"`
+	Targets             string   `toml:"targets"`
+	FullAlert           string   `toml:"full_alert"`
+	ExcludedRules       string   `toml:"excluded_rules"`
+	ExcludedAgents      string   `toml:"excluded_agents"`
+	Sender              string   `toml:"sender"`
+	Click               string   `toml:"click"`
+	ExcludedDescription []string `toml:"exclude_descriptions"`
 }
 type PriorityMap struct {
 	ThreatMap        []int `toml:"threat_map"`

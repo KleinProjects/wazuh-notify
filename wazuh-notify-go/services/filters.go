@@ -22,4 +22,11 @@ func Filter(params types.Params) {
 			os.Exit(0)
 		}
 	}
+	for _, description := range params.General.ExcludedDescription {
+		if strings.Contains(params.WazuhMessage.Parameters.Alert.FullLog, description) {
+			log.Log("excluded based on description")
+			log.CloseLogFile()
+			os.Exit(0)
+		}
+	}
 }

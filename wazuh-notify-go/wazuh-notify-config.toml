@@ -14,6 +14,12 @@ full_alert = ""
 excluded_rules = "99999, 00000"
 excluded_agents = "99999"
 
+# Exclude specific rules by string contained in description
+# These settings provide an easier way to disable events from firing the notifiers.
+exclude_descriptions = [
+    ""
+]
+
 # The next 2 settings are used to add information to the messages.
 sender = "Wazuh (IDS)"
 click = "https://documentation.wazuh.com/"

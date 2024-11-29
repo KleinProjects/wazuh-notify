@@ -32,3 +32,4 @@ jobs:
         tag_name: Golang-vx.x.x
         files: |
           wazuh-notify-go/wazuh-notify
+          wazuh-notify-go/wazuh-notify-config.toml
